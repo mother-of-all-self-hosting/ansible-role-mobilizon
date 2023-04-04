@@ -1,0 +1,21 @@
+galaxy_info:
+  author: Julian-Samuel Gebühr
+  company: Hyteck
+  role_name: mobilizon
+  namespace: moanos
+  description: Gather - Organize - Mobilize, a role to install a Mobilizon server that allows you to share events via ActivityPub
+  platforms:
+    - name: Debian
+      versions:
+        - all
+    - name: Ubuntu
+      versions:
+        - all
+    - name: ArchLinux
+      versions:
+        - all
+    - name: EL
+      versions:
+        - "7"
+  license: AGPL-3.0-or-later
+  min_ansible_version: '2.1'

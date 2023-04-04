@@ -1,0 +1,27 @@
+---
+
+- name: Fail if required mobilizon settings not defined
+  ansible.builtin.fail:
+    msg: >
+      You need to define a required configuration setting (`{{ item }}`).
+  when: "vars[item] == ''"
+  with_items:
+    - mobilizon_identifier
+    - mobilizon_uid
+    - mobilizon_gid
+    - mobilizon_hostname
+    - mobilizon_container_network
+    - mobilizon_instance_secret_key
+    - mobilizon_database_username
+    - mobilizon_database_password
+    - mobilizon_database_hostname
+
+- when: mobilizon_container_labels_traefik_enabled | bool
+  block:
+    - name: Fail if required mobilizon Traefik settings not defined
+      ansible.builtin.fail:
+        msg: >-
+          You need to define a required configuration setting (`{{ item }}`).
+      when: "vars[item] == ''"
+      with_items:
+        - mobilizon_container_labels_traefik_hostname

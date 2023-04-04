@@ -1,0 +1,20 @@
+---
+
+- block:
+    - when: mobilizon_enabled | bool
+      ansible.builtin.include_tasks: "{{ role_path }}/tasks/validate_config.yml"
+
+    - when: mobilizon_enabled | bool
+      ansible.builtin.include_tasks: "{{ role_path }}/tasks/install.yml"
+  tags:
+    - setup-all
+    - setup-mobilizon
+    - install-all
+    - install-mobilizon
+
+- block:
+    - when: not mobilizon_enabled | bool
+      ansible.builtin.include_tasks: "{{ role_path }}/tasks/uninstall.yml"
+  tags:
+    - setup-all
+    - setup-mobilizon

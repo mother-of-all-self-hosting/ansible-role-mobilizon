@@ -1,0 +1,25 @@
+---
+
+- name: Check existence of mobilizon systemd service
+  ansible.builtin.stat:
+    path: "{{ devture_systemd_docker_base_systemd_path }}/{{ mobilizon_identifier }}.service"
+  register: mobilizon_service_stat
+
+- when: mobilizon_service_stat.stat.exists | bool
+  block:
+    - name: Ensure mobilizon systemd service is stopped
+      ansible.builtin.service:
+        name: "{{ mobilizon_identifier }}"
+        state: stopped
+        enabled: false
+        daemon_reload: true
+
+    - name: Ensure mobilizon systemd service does not exist
+      ansible.builtin.file:
+        path: "{{ devture_systemd_docker_base_systemd_path }}/{{ mobilizon_identifier }}.service"
+        state: absent
+
+    - name: Ensure mobilizon path doesn't exist
+      ansible.builtin.file:
+        path: "{{ mobilizon_base_path }}"
+        state: absent
