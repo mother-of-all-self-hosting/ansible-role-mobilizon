@@ -26,7 +26,7 @@ ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
 			--label-file={{ mobilizon_base_path }}/labels \
 			--health-interval={{ mobilizon_container_health_interval }} \
 			--mount type=bind,src={{ mobilizon_data_path }}/uploads,dst=/var/lib/mobilizon/uploads \
-			--mount type=bind,src={{ mobilizon_config_path }}config.exs/uploads,dst=/etc/mobilizon/config.exs,readonly \
+			#--mount type=bind,src={{ mobilizon_config_path }}config.exs/uploads,dst=/etc/mobilizon/config.exs,readonly \
 			{% for arg in mobilizon_container_extra_arguments %}
 			{{ arg }} \
 			{% endfor %}

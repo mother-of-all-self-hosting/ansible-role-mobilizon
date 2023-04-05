@@ -10,6 +10,8 @@
   with_items:
     - "{{ mobilizon_base_path }}"
     - "{{ mobilizon_data_path }}"
+    - "{{ mobilizon_uploads_path }}"
+    - "{{ mobilizon_config_path }}"
 
 - name: Ensure mobilizon support files installed
   ansible.builtin.template:

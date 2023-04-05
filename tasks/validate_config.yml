@@ -11,10 +11,11 @@
     - mobilizon_gid
     - mobilizon_hostname
     - mobilizon_container_network
-    - mobilizon_instance_secret_key
     - mobilizon_database_username
     - mobilizon_database_password
     - mobilizon_database_hostname
+    - mobilizon_secret_key_base
+    - mobilizon_secret_key
 
 - when: mobilizon_container_labels_traefik_enabled | bool
   block:
