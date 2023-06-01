@@ -24,9 +24,11 @@ mobilizon_registrations_open: false
 mobilizon_base_path: "/{{ mobilizon_identifier }}"
 mobilizon_data_path: "{{ mobilizon_base_path }}/data"
 mobilizon_uploads_path: "{{ mobilizon_data_path }}/uploads"
+mobilizon_tzdata_path: "{{ mobilizon_data_path }}/tzdata"
 mobilizon_config_path: "{{ mobilizon_base_path }}/config"
 
-mobilizon_container_image: "{{ mobilizon_container_image_registry_prefix }}framasoft/mobilizon:{{ mobilizon_container_image_tag }}"
+mobilizon_container_image: "{{ mobilizon_container_image_registry_prefix }}{{ mobilizon_container_image_name }}"
+mobilizon_container_image_name: "framasoft/mobilizon:{{ mobilizon_container_image_tag }}"
 mobilizon_container_image_registry_prefix: docker.io/
 mobilizon_container_image_tag: "{{ mobilizon_version }}"
 mobilizon_container_image_force_pull: "{{ mobilizon_container_image.endswith(':latest') }}"

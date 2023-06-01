@@ -11,6 +11,7 @@
     - "{{ mobilizon_base_path }}"
     - "{{ mobilizon_data_path }}"
     - "{{ mobilizon_uploads_path }}"
+    - "{{ mobilizon_tzdata_path }}"
     - "{{ mobilizon_config_path }}"
 
 - name: Ensure mobilizon support files installed
@@ -24,24 +25,41 @@
     - env
     - labels
 
-- name: Ensure mobilizon container image is pulled
+
+- name: Ensure mobilizon image is pulled
   community.docker.docker_image:
     name: "{{ mobilizon_container_image }}"
     source: "{{ 'pull' if ansible_version.major > 2 or ansible_version.minor > 7 else omit }}"
-    force_source: "{{ mobilizon_container_image_force_pull if ansible_version.major > 2 or ansible_version.minor >= 8 else omit }}"
-    force: "{{ omit if ansible_version.major > 2 or ansible_version.minor >= 8 else mobilizon_container_image_force_pull }}"
-  register: result
-  retries: "{{ devture_playbook_help_container_retries_count }}"
-  delay: "{{ devture_playbook_help_container_retries_delay }}"
-  until: result is not failed
+  when: "not mobilizon_container_image_self_build | bool"
+
+- name: Ensure mobilizon repository is present on self-build
+  ansible.builtin.git:
+    repo: "{{ mobilizon_container_repo }}"
+    version: "{{ mobilizon_container_repo_version }}"
+    dest: "{{ mobilizon_container_src_files_path }}"
+    force: "yes"
+  register: mobilizon_git_pull_results
+  when: "mobilizon_container_image_self_build | bool"
+
+- name: Ensure mobilizon image is built
+  community.docker.docker_image:
+    name: "{{ mobilizon_container_image_name }}"
+    source: build
+    force_source: "{{ mobilizon_git_pull_results.changed if ansible_version.major > 2 or ansible_version.minor >= 8 else omit }}"
+    force: "{{ omit if ansible_version.major > 2 or ansible_version.minor >= 8 else matrix_mailer_git_pull_results.changed }}"
+    build:
+      dockerfile: Dockerfile
+      path: "{{ mobilizon_container_src_files_path }}"
+      pull: true
+  when: "mobilizon_container_image_self_build | bool"
 
 - name: Ensure mobilizon container network is created
   community.general.docker_network:
     name: "{{ mobilizon_container_network }}"
     driver: bridge
 
-- name: Ensure mobilizon systemd service is present
+- name: Ensure mobilizon systemd service is installed
   ansible.builtin.template:
-    mode: 0755
+    mode: 0644
     src: "{{ role_path }}/templates/systemd/mobilizon.service.j2"
     dest: "{{ devture_systemd_docker_base_systemd_path }}/{{ mobilizon_identifier }}.service"
