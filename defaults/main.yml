@@ -9,7 +9,7 @@ mobilizon_identifier: mobilizon
 mobilizon_uid: ''
 mobilizon_gid: ''
 
-mobilizon_version: 3.0.4
+mobilizon_version: 3.1.0
 
 # The hostname at which mobilizon is served. DON NOT CHANGE after first run or it'll break federation
 mobilizon_hostname: ''
