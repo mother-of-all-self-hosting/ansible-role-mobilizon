@@ -11,7 +11,7 @@ mobilizon_gid: ''
 
 mobilizon_version: 3.1.0
 
-# The hostname at which mobilizon is served. DON NOT CHANGE after first run or it'll break federation
+# The hostname at which mobilizon is served. DO NOT CHANGE after first run or it'll break federation
 mobilizon_hostname: ''
 
 # The name of the instance as shown to the users
