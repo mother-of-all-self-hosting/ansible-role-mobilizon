@@ -33,6 +33,12 @@ mobilizon_container_image_registry_prefix: docker.io/
 mobilizon_container_image_tag: "{{ mobilizon_version }}"
 mobilizon_container_image_force_pull: "{{ mobilizon_container_image.endswith(':latest') }}"
 
+mobilizon_container_image_self_build: false
+mobilizon_container_repo: "https://framagit.org/framasoft/mobilizon.git"
+mobilizon_container_repo_version: "{{ mobilizon_version if mobilizon_version != 'latest' else 'main' }}"
+mobilizon_container_src_files_path: "{{ mobilizon_base_path }}/docker-src"
+
+
 # The base container network. It will be auto-created by this role if it doesn't exist already.
 mobilizon_container_network: "{{ mobilizon_identifier }}"
 
