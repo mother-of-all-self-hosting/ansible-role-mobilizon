@@ -19,6 +19,12 @@
     - mobilizon-add-admin
 
 - block:
+    - when: mobilizon_enabled | bool
+      ansible.builtin.include_tasks: "{{ role_path }}/tasks/add-user.yml"
+  tags:
+    - mobilizon-add-user
+
+- block:
     - when: not mobilizon_enabled | bool
       ansible.builtin.include_tasks: "{{ role_path }}/tasks/uninstall.yml"
   tags:
