@@ -1,6 +1,6 @@
 ---
 
-# Project source code URL: https://framagit.org/framasoft/mobilizon/
+# Project source code URL: https://framagit.org/kaihuri/mobilizon/
 
 mobilizon_enabled: true
 
@@ -9,6 +9,7 @@ mobilizon_identifier: mobilizon
 mobilizon_uid: ''
 mobilizon_gid: ''
 
+# renovate: datasource=docker depName=framasoft/mobilizon
 mobilizon_version: 4.1.0
 
 # The hostname at which mobilizon is served. DO NOT CHANGE after first run or it'll break federation
@@ -28,13 +29,13 @@ mobilizon_tzdata_path: "{{ mobilizon_data_path }}/tzdata"
 mobilizon_config_path: "{{ mobilizon_base_path }}/config"
 
 mobilizon_container_image: "{{ mobilizon_container_image_registry_prefix }}{{ mobilizon_container_image_name }}"
-mobilizon_container_image_name: "framasoft/mobilizon:{{ mobilizon_container_image_tag }}"
+mobilizon_container_image_name: "kaihuri/mobilizon:{{ mobilizon_container_image_tag }}"
 mobilizon_container_image_registry_prefix: docker.io/
 mobilizon_container_image_tag: "{{ mobilizon_version }}"
 mobilizon_container_image_force_pull: "{{ mobilizon_container_image.endswith(':latest') }}"
 
 mobilizon_container_image_self_build: false
-mobilizon_container_repo: "https://framagit.org/framasoft/mobilizon.git"
+mobilizon_container_repo: "https://framagit.org/kaihuri/mobilizon.git"
 mobilizon_container_repo_version: "{{ mobilizon_version if mobilizon_version != 'latest' else 'main' }}"
 mobilizon_container_src_files_path: "{{ mobilizon_base_path }}/docker-src"
 
