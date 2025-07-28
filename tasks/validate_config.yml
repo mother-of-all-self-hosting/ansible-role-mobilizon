@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 ---
-
 - name: Fail if required mobilizon settings not defined
   ansible.builtin.fail:
     msg: >
@@ -21,7 +20,8 @@
     - mobilizon_secret_key_base
     - mobilizon_secret_key
 
-- when: mobilizon_container_labels_traefik_enabled | bool
+- name: Run if Traefik is enabled
+  when: mobilizon_container_labels_traefik_enabled | bool
   block:
     - name: Fail if required mobilizon Traefik settings not defined
       ansible.builtin.fail:

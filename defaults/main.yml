@@ -46,7 +46,6 @@ mobilizon_container_repo: "https://framagit.org/kaihuri/mobilizon.git"
 mobilizon_container_repo_version: "{{ mobilizon_version if mobilizon_version != 'latest' else 'main' }}"
 mobilizon_container_src_files_path: "{{ mobilizon_base_path }}/docker-src"
 
-
 # The base container network. It will be auto-created by this role if it doesn't exist already.
 mobilizon_container_network: "{{ mobilizon_identifier }}"
 

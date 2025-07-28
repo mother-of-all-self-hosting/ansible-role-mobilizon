@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 ---
-
 - name: Fail if playbook called incorrectly
   ansible.builtin.fail:
     msg: "The `email` variable needs to be provided to this playbook, via --extra-vars"
