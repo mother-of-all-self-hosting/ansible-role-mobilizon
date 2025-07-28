@@ -1,37 +1,45 @@
 # SPDX-FileCopyrightText: 2023 Julian-Samuel Gebühr
 # SPDX-FileCopyrightText: 2023 MASH project contributors
+# SPDX-FileCopyrightText: 2024 Slavi Pantaleev
+# SPDX-FileCopyrightText: 2025 Suguru Hirahara
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 ---
-
-- block:
-    - when: mobilizon_enabled | bool
-      ansible.builtin.include_tasks: "{{ role_path }}/tasks/validate_config.yml"
-
-    - when: mobilizon_enabled | bool
-      ansible.builtin.include_tasks: "{{ role_path }}/tasks/install.yml"
+- name: Perform Mobilizon installation tasks
+  when: mobilizon_enabled | bool
   tags:
     - setup-all
     - setup-mobilizon
     - install-all
     - install-mobilizon
+  block:
+    - name: Validate Mobilizon configuration
+      ansible.builtin.include_tasks: "{{ role_path }}/tasks/validate_config.yml"
+    - name: Install Mobilizon
+      ansible.builtin.include_tasks: "{{ role_path }}/tasks/install.yml"
 
-- block:
-    - when: mobilizon_enabled | bool
-      ansible.builtin.include_tasks: "{{ role_path }}/tasks/add-admin.yml"
-  tags:
-    - mobilizon-add-admin
-
-- block:
-    - when: mobilizon_enabled | bool
-      ansible.builtin.include_tasks: "{{ role_path }}/tasks/add-user.yml"
-  tags:
-    - mobilizon-add-user
-
-- block:
-    - when: not mobilizon_enabled | bool
-      ansible.builtin.include_tasks: "{{ role_path }}/tasks/uninstall.yml"
+- name: Perform Mobilizon uninstallation tasks
+  when: not mobilizon_enabled | bool
   tags:
     - setup-all
     - setup-mobilizon
+  block:
+    - name: Uninstall Mobilizon
+      ansible.builtin.include_tasks: "{{ role_path }}/tasks/uninstall.yml"
+
+- name: Perform tasks to add an admin to Mobilizon
+  when: mobilizon_enabled | bool
+  tags:
+    - mobilizon-add-admin
+  block:
+    - name: Add an admin to Mobilizon
+      ansible.builtin.include_tasks: "{{ role_path }}/tasks/add-admin.yml"
+
+- name: Perform tasks to add a user to Mobilizon
+  when: mobilizon_enabled | bool
+  tags:
+    - mobilizon-add-user
+  block:
+    - name: Add a user to Mobilizon
+      ansible.builtin.include_tasks: "{{ role_path }}/tasks/add-user.yml"
