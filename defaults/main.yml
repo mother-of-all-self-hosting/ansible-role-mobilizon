@@ -193,5 +193,8 @@ mobilizon_floc_optout_enabled: true
 # See: `mobilizon_http_header_strict_transport_security`
 mobilizon_hsts_preload_enabled: false
 
-# List of systemd services that mobilizon.service depends on
-mobilizon_systemd_required_services_list: ['docker.service']
+# List of systemd services that the Mobilizon systemd service depends on
+mobilizon_systemd_required_services_list: "{{ mobilizon_systemd_required_services_list_default + mobilizon_systemd_required_services_list_auto + mobilizon_systemd_required_services_list_custom }}"
+mobilizon_systemd_required_services_list_default: "{{ [devture_systemd_docker_base_docker_service_name] if devture_systemd_docker_base_docker_service_name else [] }}"
+mobilizon_systemd_required_services_list_auto: []
+mobilizon_systemd_required_services_list_custom: []
