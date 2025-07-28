@@ -12,28 +12,20 @@
 mobilizon_enabled: true
 
 mobilizon_identifier: mobilizon
-
-mobilizon_uid: ''
-mobilizon_gid: ''
-
-# renovate: datasource=docker depName=framasoft/mobilizon
-mobilizon_version: 4.1.0
-
-# The hostname at which Mobilizon is served. DO NOT CHANGE after first run or it'll break federation
-mobilizon_hostname: ''
-
-# The name of the instance as shown to the users
-mobilizon_instance_name: ''
-
-mobilizon_instance_secret_key: ''
-
-mobilizon_registrations_open: false
-
 mobilizon_base_path: "/{{ mobilizon_identifier }}"
 mobilizon_data_path: "{{ mobilizon_base_path }}/data"
 mobilizon_uploads_path: "{{ mobilizon_data_path }}/uploads"
 mobilizon_tzdata_path: "{{ mobilizon_data_path }}/tzdata"
 mobilizon_config_path: "{{ mobilizon_base_path }}/config"
+
+# renovate: datasource=docker depName=framasoft/mobilizon
+mobilizon_version: 4.1.0
+
+mobilizon_uid: ''
+mobilizon_gid: ''
+
+# The hostname at which Mobilizon is served. DO NOT CHANGE after first run or it'll break federation
+mobilizon_hostname: ''
 
 mobilizon_container_image: "{{ mobilizon_container_image_registry_prefix }}{{ mobilizon_container_image_name }}"
 mobilizon_container_image_name: "framasoft/mobilizon:{{ mobilizon_container_image_tag }}"
@@ -46,37 +38,21 @@ mobilizon_container_repo: "https://framagit.org/kaihuri/mobilizon.git"
 mobilizon_container_repo_version: "{{ mobilizon_version if mobilizon_version != 'latest' else 'main' }}"
 mobilizon_container_src_files_path: "{{ mobilizon_base_path }}/docker-src"
 
+# Controls whether the container exposes its HTTP port (tcp/4000 in the container).
+#
+# Takes an "<ip>:<port>" or "<port>" value (e.g. "127.0.0.1:2586"), or empty string to not expose.
+mobilizon_container_http_host_bind_port: ''
+
 # The base container network. It will be auto-created by this role if it doesn't exist already.
 mobilizon_container_network: "{{ mobilizon_identifier }}"
 
 # Port that the container will use for the web interface
-mobilizon_container_port: 4000
+mobilizon_container_http_port: 4000
 
 # A list of additional container networks that the container would be connected to.
 # The role does not create these networks, so make sure they already exist.
 # Use this to expose this container to another reverse proxy, which runs in a different container network.
 mobilizon_container_additional_networks: []
-
-# Mobilizon requires a Postgis database: https://postgis.net/
-mobilizon_database_hostname: ''
-mobilizon_database_port: 5432
-mobilizon_database_name: mobilizon
-mobilizon_database_username: ''
-mobilizon_database_password: ''
-# Use this to set the sslmode parameter of the SSL connection
-# By default, we expect a local container (without SSL), so attempting SSL connections is not necessary.
-mobilizon_database_sslmode: disable
-mobilizon_database_type: 'postgis'
-
-# E-Mail configuration
-mobilizon_instance_email: ''
-mobilizon_email_reply_email: ''
-mobilizon_email_admin_email: ''
-mobilizon_email_smtp_server: ''
-mobilizon_email_smtp_port: 465
-mobilizon_email_smtp_ssl: true
-mobilizon_email_smtp_username: ''
-mobilizon_email_smtp_password: ''
 
 # mobilizon_container_labels_traefik_enabled controls whether labels to assist a Traefik reverse-proxy will be attached to the container.
 # See `../templates/labels.j2` for details.
@@ -143,9 +119,6 @@ mobilizon_container_additional_volumes: []
 # A list of extra arguments to pass to the container
 mobilizon_container_extra_arguments: []
 
-# Additional environment variables.
-mobilizon_environment_variables_additional_variables: ''
-
 # Specifies the value of the `X-XSS-Protection` header
 # Stops pages from loading when they detect reflected cross-site scripting (XSS) attacks.
 #
@@ -198,3 +171,40 @@ mobilizon_systemd_required_services_list: "{{ mobilizon_systemd_required_service
 mobilizon_systemd_required_services_list_default: "{{ [devture_systemd_docker_base_docker_service_name] if devture_systemd_docker_base_docker_service_name else [] }}"
 mobilizon_systemd_required_services_list_auto: []
 mobilizon_systemd_required_services_list_custom: []
+
+# List of systemd services that the Mobilizon systemd service wants
+mobilizon_systemd_wanted_services_list: "{{ mobilizon_systemd_wanted_services_list_default + mobilizon_systemd_wanted_services_list_auto + mobilizon_systemd_wanted_services_list_custom }}"
+mobilizon_systemd_wanted_services_list_default: []
+mobilizon_systemd_wanted_services_list_auto: []
+mobilizon_systemd_wanted_services_list_custom: []
+
+# The name of the instance as shown to the users
+mobilizon_instance_name: ''
+
+mobilizon_instance_secret_key: ''
+
+mobilizon_registrations_open: false
+
+# Mobilizon requires a Postgis database: https://postgis.net/
+mobilizon_database_hostname: ''
+mobilizon_database_port: 5432
+mobilizon_database_name: mobilizon
+mobilizon_database_username: ''
+mobilizon_database_password: ''
+# Use this to set the sslmode parameter of the SSL connection
+# By default, we expect a local container (without SSL), so attempting SSL connections is not necessary.
+mobilizon_database_sslmode: disable
+mobilizon_database_type: 'postgis'
+
+# E-Mail configuration
+mobilizon_instance_email: ''
+mobilizon_email_reply_email: ''
+mobilizon_email_admin_email: ''
+mobilizon_email_smtp_server: ''
+mobilizon_email_smtp_port: 465
+mobilizon_email_smtp_ssl: true
+mobilizon_email_smtp_username: ''
+mobilizon_email_smtp_password: ''
+
+# Additional environment variables.
+mobilizon_environment_variables_additional_variables: ''

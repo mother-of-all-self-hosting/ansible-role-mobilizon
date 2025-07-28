@@ -41,7 +41,7 @@ traefik.http.routers.{{ mobilizon_identifier }}.tls={{ mobilizon_container_label
 traefik.http.routers.{{ mobilizon_identifier }}.tls.certResolver={{ mobilizon_container_labels_traefik_tls_certResolver }}
 {% endif %}
 
-traefik.http.services.{{ mobilizon_identifier }}.loadbalancer.server.port={{ mobilizon_container_port }}
+traefik.http.services.{{ mobilizon_identifier }}.loadbalancer.server.port={{ mobilizon_container_http_port }}
 {% endif %}
 
 {{ mobilizon_container_labels_additional_labels }}
