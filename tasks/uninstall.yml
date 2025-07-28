@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 ---
-- name: Check existence of mobilizon systemd service
+- name: Check existence of Mobilizon systemd service
   ansible.builtin.stat:
     path: "{{ devture_systemd_docker_base_systemd_path }}/{{ mobilizon_identifier }}.service"
   register: mobilizon_service_stat
@@ -11,19 +11,19 @@
 - name: Uninstall Mobilizon systemd services and files
   when: mobilizon_service_stat.stat.exists | bool
   block:
-    - name: Ensure mobilizon systemd service is stopped
+    - name: Ensure Mobilizon systemd service is stopped
       ansible.builtin.service:
         name: "{{ mobilizon_identifier }}"
         state: stopped
         enabled: false
         daemon_reload: true
 
-    - name: Ensure mobilizon systemd service does not exist
+    - name: Ensure Mobilizon systemd service does not exist
       ansible.builtin.file:
         path: "{{ devture_systemd_docker_base_systemd_path }}/{{ mobilizon_identifier }}.service"
         state: absent
 
-    - name: Ensure mobilizon path doesn't exist
+    - name: Ensure Mobilizon path doesn't exist
       ansible.builtin.file:
         path: "{{ mobilizon_base_path }}"
         state: absent

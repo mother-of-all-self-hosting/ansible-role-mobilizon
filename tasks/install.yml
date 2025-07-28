@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 ---
-- name: Ensure mobilizon paths exist
+- name: Ensure Mobilizon paths exist
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
@@ -17,7 +17,7 @@
     - "{{ mobilizon_tzdata_path }}"
     - "{{ mobilizon_config_path }}"
 
-- name: Ensure mobilizon support files installed
+- name: Ensure Mobilizon support files installed
   ansible.builtin.template:
     src: "{{ role_path }}/templates/{{ item }}.j2"
     dest: "{{ mobilizon_base_path }}/{{ item }}"
@@ -28,13 +28,13 @@
     - env
     - labels
 
-- name: Ensure mobilizon image is pulled
+- name: Ensure Mobilizon image is pulled
   community.docker.docker_image:
     name: "{{ mobilizon_container_image }}"
     source: "{{ 'pull' if ansible_version.major > 2 or ansible_version.minor > 7 else omit }}"
   when: "not mobilizon_container_image_self_build | bool"
 
-- name: Ensure mobilizon repository is present on self-build
+- name: Ensure Mobilizon repository is present on self-build
   ansible.builtin.git:
     repo: "{{ mobilizon_container_repo }}"
     version: "{{ mobilizon_container_repo_version }}"
@@ -43,7 +43,7 @@
   register: mobilizon_git_pull_results
   when: "mobilizon_container_image_self_build | bool"
 
-- name: Ensure mobilizon image is built
+- name: Ensure Mobilizon image is built
   community.docker.docker_image:
     name: "{{ mobilizon_container_image_name }}"
     source: build
@@ -55,12 +55,12 @@
       pull: true
   when: "mobilizon_container_image_self_build | bool"
 
-- name: Ensure mobilizon container network is created
+- name: Ensure Mobilizon container network is created
   community.general.docker_network:
     name: "{{ mobilizon_container_network }}"
     driver: bridge
 
-- name: Ensure mobilizon systemd service is installed
+- name: Ensure Mobilizon systemd service is installed
   ansible.builtin.template:
     mode: "0644"
     src: "{{ role_path }}/templates/systemd/mobilizon.service.j2"
