@@ -75,8 +75,8 @@
   changed_when: network_creation_result.rc == 0
   failed_when: network_creation_result.rc != 0 and 'already exists' not in network_creation_result.stderr
 
-- name: Ensure Mobilizon systemd service is installed
+- name: Ensure Mobilizon systemd service is present
   ansible.builtin.template:
-    mode: "0644"
     src: "{{ role_path }}/templates/systemd/mobilizon.service.j2"
     dest: "{{ devture_systemd_docker_base_systemd_path }}/{{ mobilizon_identifier }}.service"
+    mode: "0644"
