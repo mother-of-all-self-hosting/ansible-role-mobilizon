@@ -19,24 +19,24 @@ ExecStartPre=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_s
 ExecStartPre=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} rm {{ mobilizon_identifier }} 2>/dev/null || true'
 
 ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
-			--rm \
-			--name={{ mobilizon_identifier }} \
-			--log-driver=none \
-			--user={{ mobilizon_uid }}:{{ mobilizon_gid }} \
-			--cap-drop=ALL \
-			--read-only \
-			--network={{ mobilizon_container_network }} \
-			--hostname={{ mobilizon_container_hostname }} \
-			--env-file={{ mobilizon_base_path }}/env \
-			--label-file={{ mobilizon_base_path }}/labels \
-			--health-interval={{ mobilizon_container_health_interval }} \
-			--mount type=bind,src={{ mobilizon_data_path }}/uploads,dst=/var/lib/mobilizon/uploads \
-			--mount type=bind,src={{ mobilizon_tzdata_path }},dst=/var/lib/mobilizon/tzdata \
-			--tmpfs=/tmp:rw,noexec,nosuid,size=100m \
-			{% for arg in mobilizon_container_extra_arguments %}
-			{{ arg }} \
-			{% endfor %}
-			{{ mobilizon_container_image }}
+      --rm \
+      --name={{ mobilizon_identifier }} \
+      --log-driver=none \
+      --user={{ mobilizon_uid }}:{{ mobilizon_gid }} \
+      --cap-drop=ALL \
+      --read-only \
+      --network={{ mobilizon_container_network }} \
+      --hostname={{ mobilizon_container_hostname }} \
+      --env-file={{ mobilizon_base_path }}/env \
+      --label-file={{ mobilizon_base_path }}/labels \
+      --health-interval={{ mobilizon_container_health_interval }} \
+      --mount type=bind,src={{ mobilizon_data_path }}/uploads,dst=/var/lib/mobilizon/uploads \
+      --mount type=bind,src={{ mobilizon_tzdata_path }},dst=/var/lib/mobilizon/tzdata \
+      --tmpfs=/tmp:rw,noexec,nosuid,size=100m \
+      {% for arg in mobilizon_container_extra_arguments %}
+      {{ arg }} \
+      {% endfor %}
+      {{ mobilizon_container_image }}
 
 {% for network in mobilizon_container_additional_networks %}
 ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} network connect {{ network }} {{ mobilizon_identifier }}
