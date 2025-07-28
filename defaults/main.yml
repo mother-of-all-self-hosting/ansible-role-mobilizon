@@ -27,6 +27,8 @@ mobilizon_gid: ''
 # The hostname at which Mobilizon is served. DO NOT CHANGE after first run or it'll break federation
 mobilizon_hostname: ''
 
+mobilizon_path_prefix: /
+
 mobilizon_container_image: "{{ mobilizon_container_image_registry_prefix }}{{ mobilizon_container_image_name }}"
 mobilizon_container_image_name: "framasoft/mobilizon:{{ mobilizon_container_image_tag }}"
 mobilizon_container_image_registry_prefix: docker.io/
@@ -61,7 +63,9 @@ mobilizon_container_additional_networks: []
 mobilizon_container_labels_traefik_enabled: true
 mobilizon_container_labels_traefik_docker_network: "{{ mobilizon_container_network }}"
 mobilizon_container_labels_traefik_hostname: "{{ mobilizon_hostname }}"
-mobilizon_container_labels_traefik_rule: "Host(`{{ mobilizon_container_labels_traefik_hostname }}`)"
+# The path prefix must either be `/` or not end with a slash (e.g. `/mobilizon`).
+mobilizon_container_labels_traefik_path_prefix: "{{ mobilizon_path_prefix }}"
+mobilizon_container_labels_traefik_rule: "Host(`{{ mobilizon_container_labels_traefik_hostname }}`){% if mobilizon_container_labels_traefik_path_prefix != '/' %} && PathPrefix(`{{ mobilizon_container_labels_traefik_path_prefix }}`){% endif %}"
 mobilizon_container_labels_traefik_priority: 0
 mobilizon_container_labels_traefik_entrypoints: web-secure
 mobilizon_container_labels_traefik_tls: "{{ mobilizon_container_labels_traefik_entrypoints != 'web' }}"
