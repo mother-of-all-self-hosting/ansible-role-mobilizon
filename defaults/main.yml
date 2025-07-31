@@ -118,7 +118,9 @@ mobilizon_container_hostname: "{{ mobilizon_hostname }}"
 # if you wish to mount your own files into the container.
 # Contains definition objects like this: `{"type": "bind", "src": "/outside", "dst": "/inside", "options": "readonly"}.
 # See the `--mount` documentation for the `docker run` command.
-mobilizon_container_additional_volumes: []
+mobilizon_container_additional_volumes: "{{ mobilizon_container_additional_volumes_auto + mobilizon_container_additional_volumes_custom }}"
+mobilizon_container_additional_volumes_auto: []
+mobilizon_container_additional_volumes_custom: []
 
 # A list of extra arguments to pass to the container
 mobilizon_container_extra_arguments: []
