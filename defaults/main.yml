@@ -13,7 +13,7 @@ mobilizon_uid: ''
 mobilizon_gid: ''
 
 # renovate: datasource=docker depName=framasoft/mobilizon
-mobilizon_version: 4.1.0
+mobilizon_version: 5.1.2
 
 # The hostname at which mobilizon is served. DO NOT CHANGE after first run or it'll break federation
 mobilizon_hostname: ''
