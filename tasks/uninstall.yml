@@ -39,7 +39,7 @@
         path: "{{ devture_systemd_docker_base_systemd_path }}/{{ mobilizon_identifier }}.service"
         state: absent
 
-    - name: Ensure Mobilizon path doesn't exist
+    - name: Ensure Mobilizon path does not exist
       ansible.builtin.file:
         path: "{{ mobilizon_base_path }}"
         state: absent
