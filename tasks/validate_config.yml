@@ -23,7 +23,6 @@
     - mobilizon_gid
     - mobilizon_hostname
     - mobilizon_container_network
-    - mobilizon_database_username
     - mobilizon_database_password
     - mobilizon_database_hostname
     - mobilizon_secret_key_base

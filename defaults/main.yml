@@ -195,7 +195,7 @@ mobilizon_registrations_open: false
 mobilizon_database_hostname: ''
 mobilizon_database_port: 5432
 mobilizon_database_name: mobilizon
-mobilizon_database_username: ''
+mobilizon_database_username: mobilizon
 mobilizon_database_password: ''
 # Use this to set the sslmode parameter of the SSL connection
 # By default, we expect a local container (without SSL), so attempting SSL connections is not necessary.
