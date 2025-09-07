@@ -13,7 +13,7 @@
     msg: "The `password` variable needs to be provided to this playbook, via --extra-vars"
   when: "password is not defined or password == '<password>'"
 
-- name: Ensure Mobilizon is started
+- name: Ensure Mobilizon service is started
   ansible.builtin.service:
     name: "{{ mobilizon_identifier }}"
     state: started
