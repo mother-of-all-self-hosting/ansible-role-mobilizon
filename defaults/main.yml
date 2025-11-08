@@ -21,11 +21,11 @@ mobilizon_config_path: "{{ mobilizon_base_path }}/config"
 # renovate: datasource=docker depName=framasoft/mobilizon
 mobilizon_version: 4.1.0
 
-mobilizon_uid: ''
-mobilizon_gid: ''
+mobilizon_uid: ""
+mobilizon_gid: ""
 
 # The hostname at which Mobilizon is served. DO NOT CHANGE after first run or it'll break federation
-mobilizon_hostname: ''
+mobilizon_hostname: ""
 
 mobilizon_path_prefix: /
 
@@ -43,7 +43,7 @@ mobilizon_container_src_files_path: "{{ mobilizon_base_path }}/docker-src"
 # Controls whether the container exposes its HTTP port (tcp/4000 in the container).
 #
 # Takes an "<ip>:<port>" or "<port>" value (e.g. "127.0.0.1:2586"), or empty string to not expose.
-mobilizon_container_http_host_bind_port: ''
+mobilizon_container_http_host_bind_port: ""
 
 # The base container network. It will be auto-created by this role if it doesn't exist already.
 mobilizon_container_network: "{{ mobilizon_identifier }}"
@@ -98,7 +98,7 @@ mobilizon_container_labels_traefik_additional_response_headers_custom: {}
 # mobilizon_container_labels_additional_labels: |
 #   my.label=1
 #   another.label="here"
-mobilizon_container_labels_additional_labels: ''
+mobilizon_container_labels_additional_labels: ""
 
 # Specifies how often the container health-check will run.
 #
@@ -185,32 +185,32 @@ mobilizon_systemd_wanted_services_list_auto: []
 mobilizon_systemd_wanted_services_list_custom: []
 
 # The name of the instance as shown to the users
-mobilizon_instance_name: ''
+mobilizon_instance_name: ""
 
-mobilizon_instance_secret_key: ''
+mobilizon_instance_secret_key: ""
 
 mobilizon_registrations_open: false
 
 # Mobilizon requires a Postgis database: https://postgis.net/
-mobilizon_database_hostname: ''
+mobilizon_database_hostname: ""
 mobilizon_database_port: 5432
 mobilizon_database_name: mobilizon
 mobilizon_database_username: mobilizon
-mobilizon_database_password: ''
+mobilizon_database_password: ""
 # Use this to set the sslmode parameter of the SSL connection
 # By default, we expect a local container (without SSL), so attempting SSL connections is not necessary.
 mobilizon_database_sslmode: disable
 mobilizon_database_type: 'postgis'
 
 # E-Mail configuration
-mobilizon_instance_email: ''
-mobilizon_email_reply_email: ''
-mobilizon_email_admin_email: ''
-mobilizon_email_smtp_server: ''
+mobilizon_instance_email: ""
+mobilizon_email_reply_email: ""
+mobilizon_email_admin_email: ""
+mobilizon_email_smtp_server: ""
 mobilizon_email_smtp_port: 465
 mobilizon_email_smtp_ssl: true
-mobilizon_email_smtp_username: ''
-mobilizon_email_smtp_password: ''
+mobilizon_email_smtp_username: ""
+mobilizon_email_smtp_password: ""
 
 # Additional environment variables.
-mobilizon_environment_variables_additional_variables: ''
+mobilizon_environment_variables_additional_variables: ""
