@@ -28,6 +28,14 @@
     - env
     - labels
 
+- name: Ensure Mobilizon config.exs is present
+  ansible.builtin.template:
+    src: "{{ role_path }}/templates/config/config.exs.j2"
+    dest: "{{ mobilizon_config_path }}/config.exs"
+    mode: "0640"
+    owner: "{{ mobilizon_uid }}"
+    group: "{{ mobilizon_gid }}"
+
 - name: Ensure Mobilizon image is pulled
   community.docker.docker_image:
     name: "{{ mobilizon_container_image }}"
