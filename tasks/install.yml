@@ -28,6 +28,14 @@
     - env
     - labels
 
+- name: Ensure Mobilizon config.exs is present
+  ansible.builtin.template:
+    src: "{{ role_path }}/templates/config/config.exs.j2"
+    dest: "{{ mobilizon_config_path }}/config.exs"
+    mode: "0640"
+    owner: "{{ mobilizon_uid }}"
+    group: "{{ mobilizon_gid }}"
+
 - name: Ensure Mobilizon image is pulled
   community.docker.docker_image:
     name: "{{ mobilizon_container_image }}"
@@ -74,12 +82,6 @@
   register: network_creation_result
   changed_when: network_creation_result.rc == 0
   failed_when: network_creation_result.rc != 0 and 'already exists' not in network_creation_result.stderr
-
-- name: Ensure Mobilizon config.exs is present
-  ansible.builtin.template:
-    src: "{{ role_path }}/templates/config/config.exs.j2"
-    dest: "{{ mobilizon_base_path }}/config/config.exs"
-    mode: "0640"
 
 - name: Ensure Mobilizon systemd service is present
   ansible.builtin.template:
