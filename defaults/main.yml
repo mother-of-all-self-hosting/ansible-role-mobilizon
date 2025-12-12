@@ -212,5 +212,17 @@ mobilizon_email_smtp_ssl: true
 mobilizon_email_smtp_username: ""
 mobilizon_email_smtp_password: ""
 
+# Keycloak OAuth2 configuration (through OpenID Connect)
+# Other OpenID Connect providers should work with this provider as well, such as Nextcloud with the "oidc" app
+mobilizon_keycloak_oauth_enabled: false
+mobilizon_keycloak_hostname: ""
+mobilizon_keycloak_signin_label: "Keycloak"
+mobilizon_keycloak_default_scope: "openid email profile"
+mobilizon_keycloak_client_id: ""
+mobilizon_keycloak_client_secret: ""
+mobilizon_keycloak_authorize_url: ""
+mobilizon_keycloak_token_url: ""
+mobilizon_keycloak_userinfo_url: ""
+
 # Additional environment variables.
 mobilizon_environment_variables_additional_variables: ""
