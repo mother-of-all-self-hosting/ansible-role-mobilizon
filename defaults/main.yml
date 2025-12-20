@@ -123,7 +123,9 @@ mobilizon_container_additional_volumes_auto: []
 mobilizon_container_additional_volumes_custom: []
 
 # A list of extra arguments to pass to the container
-mobilizon_container_extra_arguments: []
+mobilizon_container_extra_arguments: "{{ mobilizon_container_extra_arguments_auto + mobilizon_container_extra_arguments_custom }}"
+mobilizon_container_extra_arguments_auto: []
+mobilizon_container_extra_arguments_custom: []
 
 # Specifies the value of the `X-XSS-Protection` header
 # Stops pages from loading when they detect reflected cross-site scripting (XSS) attacks.
