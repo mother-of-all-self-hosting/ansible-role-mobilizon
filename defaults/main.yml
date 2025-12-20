@@ -212,5 +212,8 @@ mobilizon_email_smtp_ssl: true
 mobilizon_email_smtp_username: ""
 mobilizon_email_smtp_password: ""
 
+# Specify the timezone
+mobilizon_environment_variables_tz: UTC
+
 # Additional environment variables.
 mobilizon_environment_variables_additional_variables: ""
