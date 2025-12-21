@@ -125,7 +125,7 @@ mobilizon_container_additional_volumes: "{{ mobilizon_container_additional_volum
 mobilizon_container_additional_volumes_auto: []
 mobilizon_container_additional_volumes_custom: []
 
-# A list of extra arguments to pass to the container
+# A list of extra arguments to pass to the container (`docker create` command)
 mobilizon_container_extra_arguments: "{{ mobilizon_container_extra_arguments_auto + mobilizon_container_extra_arguments_custom }}"
 mobilizon_container_extra_arguments_auto: []
 mobilizon_container_extra_arguments_custom: []
