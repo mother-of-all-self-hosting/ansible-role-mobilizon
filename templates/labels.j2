@@ -56,4 +56,6 @@ traefik.http.routers.{{ mobilizon_identifier }}.tls.certResolver={{ mobilizon_co
 traefik.http.services.{{ mobilizon_identifier }}.loadbalancer.server.port={{ mobilizon_container_http_port }}
 {% endif %}
 
-{{ mobilizon_container_labels_additional_labels }}
+{% for arg in mobilizon_container_labels_additional_labels %}
+{{ arg }}
+{% endfor %}
