@@ -46,7 +46,7 @@
 
     - name: Copy config.exs from running container
       ansible.builtin.command: >-
-        docker cp mobilizon_mount_files:/etc/mobilizon/config.exs /mash/mobilizon/config/config.exs
+        docker cp mobilizon_mount_files:/etc/mobilizon/config.exs {{ mobilizon_config_path }}/config.exs
       changed_when: true
 
     - name: Stop Mobilizon container
