@@ -36,6 +36,7 @@ ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
       --env-file={{ mobilizon_base_path }}/env \
       --label-file={{ mobilizon_base_path }}/labels \
       --health-interval={{ mobilizon_container_health_interval }} \
+      --mount type=bind,src={{ mobilizon_base_path }}/config/config.exs,dst=/etc/mobilizon/config.exs \
       --mount type=bind,src={{ mobilizon_data_path }}/uploads,dst=/var/lib/mobilizon/uploads \
       --mount type=bind,src={{ mobilizon_tzdata_path }},dst=/var/lib/mobilizon/tzdata \
       --tmpfs=/tmp:rw,noexec,nosuid,size={{ mobilizon_container_tmpfs_tmp_size }} \
