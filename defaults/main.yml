@@ -19,7 +19,7 @@ mobilizon_tzdata_path: "{{ mobilizon_data_path }}/tzdata"
 mobilizon_config_path: "{{ mobilizon_base_path }}/config"
 
 # renovate: datasource=docker depName=kaihuri/mobilizon
-mobilizon_version: 4.1.0
+mobilizon_version: 5.2.2
 
 mobilizon_uid: ""
 mobilizon_gid: ""
