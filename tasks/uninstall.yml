@@ -19,21 +19,24 @@
         enabled: false
         daemon_reload: true
 
-    - name: Ensure Mobilizon container network does not exist via community.docker.docker_network
-      when: devture_systemd_docker_base_container_network_creation_method == 'ansible-module'
-      community.docker.docker_network:
-        name: "{{ mobilizon_container_network }}"
-        state: absent
-      register: mobilizon_network_deletion_result
+    - name: Ensure Mobilizon container network does not exist
+      when: mobilizon_container_network_deletion_enabled
+      block:
+        - name: Ensure Mobilizon container network does not exist via community.docker.docker_network
+          when: devture_systemd_docker_base_container_network_creation_method == 'ansible-module'
+          community.docker.docker_network:
+            name: "{{ mobilizon_container_network }}"
+            state: absent
+          register: mobilizon_network_deletion_result
 
-    - name: Ensure Mobilizon container network does not exist via ansible.builtin.command
-      when: devture_systemd_docker_base_container_network_creation_method == 'command'
-      ansible.builtin.command:
-        cmd: >-
-          {{ devture_systemd_docker_base_host_command_docker }} network rm
-          {{ mobilizon_container_network }}
-      register: mobilizon_network_deletion_result
-      changed_when: mobilizon_container_network in mobilizon_network_deletion_result.stdout
+        - name: Ensure Mobilizon container network does not exist via ansible.builtin.command
+          when: devture_systemd_docker_base_container_network_creation_method == 'command'
+          ansible.builtin.command:
+            cmd: >-
+              {{ devture_systemd_docker_base_host_command_docker }} network rm
+              {{ mobilizon_container_network }}
+          register: mobilizon_network_deletion_result
+          changed_when: mobilizon_container_network in mobilizon_network_deletion_result.stdout
 
     - name: Ensure Mobilizon systemd service does not exist
       ansible.builtin.file:
