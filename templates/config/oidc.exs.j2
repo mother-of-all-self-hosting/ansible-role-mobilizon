@@ -1,0 +1,26 @@
+# SPDX-FileCopyrightText: 2020 Thomas Citharel
+# SPDX-FileCopyrightText: 2026 Timofej Luitle
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+# Mobilizon OIDC client configuration
+
+config :ueberauth,
+       Ueberauth,
+       providers: [
+         keycloak: {Ueberauth.Strategy.Keycloak, [default_scope: "{{ mobilizon_oidc_scopes }}"]}
+       ]
+
+config :mobilizon, :auth,
+  oauth_consumer_strategies: [
+    {:keycloak, "{{ mobilizon_oidc_provider_name }}"}
+  ]
+
+config :ueberauth, Ueberauth.Strategy.Keycloak.OAuth,
+  client_id: "{{ mobilizon_oidc_client_id }}",
+  client_secret: "{{ mobilizon_oidc_client_secret }}",
+  site: "{{ mobilizon_oidc_issuer_url }}",
+  authorize_url: "{{ mobilizon_oidc_authorize_url }}",
+  token_url: "{{ mobilizon_oidc_token_url }}",
+  userinfo_url: "{{ mobilizon_oidc_userinfo_url }}",
+  token_method: :post

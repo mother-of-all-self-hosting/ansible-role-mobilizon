@@ -1,4 +1,5 @@
 # SPDX-FileCopyrightText: 2023 Julian-Samuel Gebühr
+# SPDX-FileCopyrightText: 2026 Timofej Luitle
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
@@ -19,7 +20,7 @@ mobilizon_tzdata_path: "{{ mobilizon_data_path }}/tzdata"
 mobilizon_config_path: "{{ mobilizon_base_path }}/config"
 
 # renovate: datasource=docker depName=kaihuri/mobilizon
-mobilizon_version: 4.1.0
+mobilizon_version: 5.2.2
 
 mobilizon_uid: ""
 mobilizon_gid: ""
@@ -222,6 +223,18 @@ mobilizon_email_smtp_port: 465
 mobilizon_email_smtp_ssl: true
 mobilizon_email_smtp_username: ""
 mobilizon_email_smtp_password: ""
+
+# OAuth2 configuration (through OpenID Connect)
+# Other OpenID Connect providers should work with this provider as well, such as Nextcloud with the "oidc" app
+mobilizon_oidc_client_enabled: false
+mobilizon_oidc_provider_name: "OpenID Connect"
+mobilizon_oidc_client_id: ""
+mobilizon_oidc_client_secret: ""
+mobilizon_oidc_issuer_url: ""
+mobilizon_oidc_authorize_url: ""
+mobilizon_oidc_token_url: ""
+mobilizon_oidc_userinfo_url: ""
+mobilizon_oidc_scopes: "openid email profile"
 
 # Specify the timezone
 mobilizon_environment_variables_tz: UTC
