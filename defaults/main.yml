@@ -233,10 +233,6 @@ mobilizon_instance_secret_key: ""
 
 mobilizon_registrations_open: false
 
-# Specify a database driver to use
-# Mobilizon requires a Postgis database: https://postgis.net/
-mobilizon_database_type: 'postgis'
-
 # Specify database configuration
 mobilizon_database_hostname: ""
 mobilizon_database_port: 5432
