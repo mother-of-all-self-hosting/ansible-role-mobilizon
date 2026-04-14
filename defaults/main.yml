@@ -1,4 +1,5 @@
 # SPDX-FileCopyrightText: 2023 Julian-Samuel Gebühr
+# SPDX-FileCopyrightText: 2026 Suguru Hirahara
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
@@ -226,36 +227,47 @@ mobilizon_container_cleanup_command: |
   echo "Failed to remove stale container {{ mobilizon_identifier }} after {{ mobilizon_container_cleanup_timeout_seconds }} attempts" >&2;
   exit 1
 
-# The name of the instance as shown to the users
-mobilizon_instance_name: ""
+# Specify the timezone
+mobilizon_environment_variables_tz: UTC
 
-mobilizon_instance_secret_key: ""
+# Specify the name for your instance
+mobilizon_environment_variables_instance_name: ""
 
-mobilizon_registrations_open: false
+# Control if registration is opened or closed
+mobilizon_environment_variables_registrations_open: false
+
+# Specify sender email address
+mobilizon_environment_variables_instance_email: ""
+
+# Specify receiver email address
+mobilizon_environment_variables_email_reply_email: ""
+
+# Specify log level
+mobilizon_environment_variables_loglevel: error
 
 # Specify database configuration
 mobilizon_database_hostname: ""
 mobilizon_database_port: 5432
 mobilizon_database_username: mobilizon
 mobilizon_database_password: ""
-# Specify SSL mode for Postgres database server
-# By default, we expect a local container (without SSL), so attempting SSL connections is not necessary.
-# Valid values: see https://www.postgresql.org/docs/11/libpq-ssl.html#LIBPQ-SSL-SSLMODE-STATEMENTS
-mobilizon_database_sslmode: disable
+mobilizon_database_sslmode: false
 mobilizon_database_name: mobilizon
 
-# E-Mail configuration
-mobilizon_instance_email: ""
-mobilizon_email_reply_email: ""
-mobilizon_email_admin_email: ""
-mobilizon_email_smtp_server: ""
-mobilizon_email_smtp_port: 465
-mobilizon_email_smtp_ssl: true
-mobilizon_email_smtp_username: ""
-mobilizon_email_smtp_password: ""
+# Specify a secret key used as a base to generate secrets for encrypting and signing data
+# generated with `pwgen -s 64 1` or in another way.
+mobilizon_environment_variables_secret_key_base: ""
 
-# Specify the timezone
-mobilizon_environment_variables_tz: UTC
+# Specify a secret key used as a base to generate JWT tokens
+# generated with `pwgen -s 64 1` or in another way.
+mobilizon_environment_variables_secret_key: ""
+
+# Specify mailer configuration
+mobilizon_environment_variables_email_smtp_server: ""
+mobilizon_environment_variables_email_smtp_port: 465
+mobilizon_environment_variables_email_smtp_username: ""
+mobilizon_environment_variables_email_smtp_password: ""
+mobilizon_environment_variables_email_smtp_ssl: true
+mobilizon_environment_variables_email_smtp_tls: if_available
 
 # Additional environment variables.
 mobilizon_environment_variables_additional_variables: ""
