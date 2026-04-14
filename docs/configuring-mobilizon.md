@@ -63,7 +63,7 @@ mobilizon_hostname: "example.com"
 ```
 
 >[!WARNING]
-> Do not change the hostname after the instance has already run once. If changed, the Mobilizon instance stops working properly!
+> Do not replace the value after the Mobilizon instance has already run once. If changed, it stops working properly.
 
 After adjusting the hostname, make sure to adjust your DNS records to point the domain to your server.
 
