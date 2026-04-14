@@ -12,17 +12,17 @@
     password is not defined or password == 'PASSWORD_HERE' or
     email is not defined or email == 'EMAIL_ADDRESS_HERE'
 
-- name: Set the initial role to 'user' when running 'create-user-mobilizon'
+- name: Set the initial role to 'user' when running 'create-user-mobilizon' for Mobilizon
   ansible.builtin.set_fact:
     initial_role: user
   when: "'create-user-mobilizon' in ansible_run_tags"
 
-- name: Set the initial role to 'admin' when running 'create-admin-mobilizon'
+- name: Set the initial role to 'admin' when running 'create-admin-mobilizon' for Mobilizon
   ansible.builtin.set_fact:
     initial_role: admin
   when: "'create-admin-mobilizon' in ansible_run_tags"
 
-- name: Set user details
+- name: Set user details for Mobilizon
   ansible.builtin.set_fact:
     user:
       initial_email: "{{ email }}"
