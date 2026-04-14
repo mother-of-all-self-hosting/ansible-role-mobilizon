@@ -250,12 +250,12 @@ mobilizon_database_name: mobilizon
 #
 # Example:
 # mobilizon_users_custom:
-#   - email: admin@example.com
+#   - initial_email: admin@example.com
 #     initial_password: password
-#     role: admin
-#   - email: user@example.com
+#     initial_role: admin
+#   - initial_email: user@example.com
 #     initial_password: password
-#     role: user
+#     initial_role: user
 mobilizon_users: "{{ mobilizon_users_auto + mobilizon_users_custom }}"
 mobilizon_users_auto: []
 mobilizon_users_custom: []

@@ -185,12 +185,12 @@ Those users can be specified like below:
 
 ```yaml
 mobilizon_users_custom:
-  - email: admin@example.com
+  - initial_email: admin@example.com
     initial_password: password
-    role: admin
-  - email: admin@example.com
+    initial_role: admin
+  - initial_email: user@example.com
     initial_password: password
-    role: user
+    initial_role: user
 ```
 
 ## Troubleshooting
