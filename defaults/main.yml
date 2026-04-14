@@ -253,7 +253,7 @@ mobilizon_database_name: mobilizon
 #   - email: admin@example.com
 #     initial_password: password
 #     role: admin
-#   - email: admin@example.com
+#   - email: user@example.com
 #     initial_password: password
 #     role: user
 mobilizon_users: "{{ mobilizon_users_auto + mobilizon_users_custom }}"
