@@ -157,13 +157,15 @@ If you use the MASH playbook, the shortcut commands with the [`just` program](ht
 
 After running the command for installation, Mobilizon becomes available at the specified hostname like `https://example.com`.
 
-To get started, create a user first and open the URL with a web browser to log in to the instance. You can create one on the web UI if `mobilizon_environment_variables_registrations_open` is set to `true`. Alternatively, you can run the command below to create users.
+To get started, create a user first and open the URL with a web browser to log in to the instance. You can create one on the web UI if `mobilizon_environment_variables_registrations_open` is set to `true`.
+
+Alternatively, you can run the command below to create users.
 
 ### Creating users
 
 #### Creating a user manually
 
-You can create users by running the command below:
+You can create a user by running the command below:
 
 ```sh
 ansible-playbook -i inventory/hosts setup.yml --tags=create-user-mobilizon -e password=PASSWORD_HERE -e email=EMAIL_ADDRESS_HERE
