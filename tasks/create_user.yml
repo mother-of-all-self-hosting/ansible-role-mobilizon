@@ -6,13 +6,10 @@
 ---
 - name: Fail if playbook called incorrectly
   ansible.builtin.fail:
-    msg: "The `email` variable needs to be provided to this playbook, via --extra-vars"
-  when: "email is not defined or email == '<email>'"
-
-- name: Fail if playbook called incorrectly
-  ansible.builtin.fail:
-    msg: "The `password` variable needs to be provided to this playbook, via --extra-vars"
-  when: "password is not defined or password == '<password>'"
+    msg: "The password` and `email` variables need to be provided via --extra-vars"
+  when: >-
+    password is not defined or password == '<password>' or
+    email is not defined or email == '<email>'
 
 - name: Ensure Mobilizon service is started
   ansible.builtin.service:
