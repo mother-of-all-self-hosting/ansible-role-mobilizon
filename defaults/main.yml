@@ -35,10 +35,11 @@ mobilizon_hostname: ""
 # This value must either be `/` or not end with a slash (e.g. `/mobilizon`).
 mobilizon_path_prefix: /
 
-mobilizon_container_image: "{{ mobilizon_container_image_registry_prefix }}{{ mobilizon_container_image_name }}"
-mobilizon_container_image_name: "kaihuri/mobilizon:{{ mobilizon_container_image_tag }}"
-mobilizon_container_image_registry_prefix: docker.io/
+mobilizon_container_image: "{{ mobilizon_container_image_registry_prefix }}kaihuri/mobilizon:{{ mobilizon_container_image_tag }}"
 mobilizon_container_image_tag: "{{ mobilizon_version }}"
+mobilizon_container_image_registry_prefix: "{{ mobilizon_container_image_registry_prefix_upstream }}"
+mobilizon_container_image_registry_prefix_upstream: "{{ mobilizon_container_image_registry_prefix_upstream_default }}"
+mobilizon_container_image_registry_prefix_upstream_default: docker.io/
 mobilizon_container_image_force_pull: "{{ mobilizon_container_image.endswith(':latest') }}"
 
 mobilizon_container_image_self_build: false

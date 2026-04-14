@@ -45,7 +45,7 @@
 
 - name: Ensure Mobilizon image is built
   community.docker.docker_image:
-    name: "{{ mobilizon_container_image_name }}"
+    name: "{{ mobilizon_container_image }}"
     source: build
     force_source: "{{ mobilizon_git_pull_results.changed if ansible_version.major > 2 or ansible_version.minor >= 8 else omit }}"
     force: "{{ omit if ansible_version.major > 2 or ansible_version.minor >= 8 else matrix_mailer_git_pull_results.changed }}"
