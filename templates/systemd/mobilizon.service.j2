@@ -29,10 +29,12 @@ ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
       --cap-drop=ALL \
       --read-only \
       --network={{ mobilizon_container_network }} \
+      {% if mobilizon_container_hostname %}
+      --hostname={{ mobilizon_container_hostname }} \
+      {% endif %}
       {% if mobilizon_container_http_host_bind_port %}
       -p {{ mobilizon_container_http_host_bind_port }}:{{ mobilizon_container_http_port }} \
       {% endif %}
-      --hostname={{ mobilizon_container_hostname }} \
       --env-file={{ mobilizon_base_path }}/env \
       --label-file={{ mobilizon_base_path }}/labels \
       --health-interval={{ mobilizon_container_health_interval }} \

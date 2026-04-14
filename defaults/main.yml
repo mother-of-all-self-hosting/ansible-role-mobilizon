@@ -134,7 +134,10 @@ mobilizon_container_labels_additional_labels_custom: []
 # For non-Traefik setups, we use the default healthcheck interval (60s) to decrease overhead.
 mobilizon_container_health_interval: "{{ '5s' if mobilizon_container_labels_traefik_enabled else '60s' }}"
 
-mobilizon_container_hostname: "{{ mobilizon_hostname }}"
+# Intentionally leaving this blank, instead of defaulting it to `mobilizon_hostname`, to avoid specifying a hostname
+# which could render other services on that hostname potentially unreachable.
+# See: https://github.com/mother-of-all-self-hosting/mash-playbook/issues/391
+mobilizon_container_hostname: ""
 
 # Specify the size of the container's tmpfs volume
 mobilizon_container_tmpfs_tmp_size: 128m
