@@ -36,9 +36,9 @@
 
 - name: Ensure Mobilizon repository is present on self-build
   ansible.builtin.git:
-    repo: "{{ mobilizon_container_repo }}"
-    version: "{{ mobilizon_container_repo_version }}"
-    dest: "{{ mobilizon_container_src_files_path }}"
+    repo: "{{ mobilizon_container_image_self_build_repo }}"
+    version: "{{ mobilizon_container_image_self_build_repo_version }}"
+    dest: "{{ mobilizon_container_image_self_build_src_files_path }}"
     force: "yes"
   register: mobilizon_git_pull_results
   when: "mobilizon_container_image_self_build | bool"
@@ -51,7 +51,7 @@
     force: "{{ omit if ansible_version.major > 2 or ansible_version.minor >= 8 else matrix_mailer_git_pull_results.changed }}"
     build:
       dockerfile: Dockerfile
-      path: "{{ mobilizon_container_src_files_path }}"
+      path: "{{ mobilizon_container_image_self_build_src_files_path }}"
       pull: true
   when: "mobilizon_container_image_self_build | bool"
 
