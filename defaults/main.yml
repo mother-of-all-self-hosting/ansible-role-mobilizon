@@ -237,6 +237,14 @@ mobilizon_container_cleanup_command: |
   echo "Failed to remove stale container {{ mobilizon_identifier }} after {{ mobilizon_container_cleanup_timeout_seconds }} attempts" >&2;
   exit 1
 
+# Specify database configuration
+mobilizon_database_hostname: ""
+mobilizon_database_port: 5432
+mobilizon_database_username: mobilizon
+mobilizon_database_password: ""
+mobilizon_database_sslmode: false
+mobilizon_database_name: mobilizon
+
 # mobilizon_users contains a list of users that should be created automatically
 # To add your own users for specific host, use `mobilizon_users_custom`
 #
@@ -269,14 +277,6 @@ mobilizon_environment_variables_email_reply_email: ""
 
 # Specify log level
 mobilizon_environment_variables_loglevel: error
-
-# Specify database configuration
-mobilizon_database_hostname: ""
-mobilizon_database_port: 5432
-mobilizon_database_username: mobilizon
-mobilizon_database_password: ""
-mobilizon_database_sslmode: false
-mobilizon_database_name: mobilizon
 
 # Specify a secret key used as a base to generate secrets for encrypting and signing data
 # generated with `pwgen -s 64 1` or in another way.
