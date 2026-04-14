@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2023 Julian-Samuel Gebühr
 # SPDX-FileCopyrightText: 2023 MASH project contributors
 # SPDX-FileCopyrightText: 2024 Slavi Pantaleev
-# SPDX-FileCopyrightText: 2025 Suguru Hirahara
+# SPDX-FileCopyrightText: 2025, 2026 Suguru Hirahara
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
@@ -31,15 +31,15 @@
 - name: Perform tasks to add an admin to Mobilizon
   when: mobilizon_enabled | bool
   tags:
-    - mobilizon-add-admin
+    - create-admin-mobilizon
   block:
     - name: Add an admin to Mobilizon
-      ansible.builtin.include_tasks: "{{ role_path }}/tasks/add-admin.yml"
+      ansible.builtin.include_tasks: "{{ role_path }}/tasks/create_admin.yml"
 
 - name: Perform tasks to add a user to Mobilizon
   when: mobilizon_enabled | bool
   tags:
-    - mobilizon-add-user
+    - create-user-mobilizon
   block:
     - name: Add a user to Mobilizon
-      ansible.builtin.include_tasks: "{{ role_path }}/tasks/add-user.yml"
+      ansible.builtin.include_tasks: "{{ role_path }}/tasks/create_user.yml"
