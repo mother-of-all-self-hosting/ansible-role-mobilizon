@@ -20,17 +20,17 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 # Setting up Mobilizon
 
-This is an [Ansible](https://www.ansible.com/) role which installs [Mobilizon](https://github.com/getmobilizon/mobilizon) to run as a [Docker](https://www.docker.com/) container wrapped in a systemd service.
+This is an [Ansible](https://www.ansible.com/) role which installs [Mobilizon](https://joinmobilizon.org/en/) to run as a [Docker](https://www.docker.com/) container wrapped in a systemd service.
 
-Mobilizon is a feedback portal for feature requests and suggestions.
+Mobilizon is a ActivityPub/Fediverse server to create and share events.
 
-See the project's [documentation](https://docs.mobilizon.io/) to learn what Mobilizon does and why it might be useful to you.
+See the project's [documentation](https://docs.mobilizon.org/) to learn what Mobilizon does and why it might be useful to you.
 
 ## Prerequisites
 
-To run a Mobilizon instance it is necessary to prepare a [Postgres](https://www.postgresql.org/) database server.
+To run a Mobilizon instance it is necessary to prepare a [Postgres](https://www.postgresql.org/) database server with [PostGIS](https://postgis.net/) extensions installed.
 
-If you are looking for an Ansible role for Postgres, you can check out [ansible-role-postgres](https://github.com/mother-of-all-self-hosting/ansible-role-postgres) maintained by the [Mother-of-All-Self-Hosting (MASH)](https://github.com/mother-of-all-self-hosting) team.
+If you are looking for an Ansible role for Postgres with PostGIS extensions installed, you can check out [ansible-role-postgis](https://github.com/mother-of-all-self-hosting/ansible-role-postgis) maintained by the [Mother-of-All-Self-Hosting (MASH)](https://github.com/mother-of-all-self-hosting) team.
 
 ## Adjusting the playbook configuration
 
@@ -62,6 +62,9 @@ To enable Mobilizon you need to set the hostname as well. To do so, add the foll
 mobilizon_hostname: "example.com"
 ```
 
+>[!WARNING]
+> Do not change the hostname after the instance has already run once. If changed, the Mobilizon instance stops working properly!
+
 After adjusting the hostname, make sure to adjust your DNS records to point the domain to your server.
 
 **Note**: hosting Mobilizon under a subpath (by configuring the `mobilizon_path_prefix` variable) does not seem to be possible due to Mobilizon's technical limitations.
@@ -80,56 +83,55 @@ mobilizon_database_name: YOUR_POSTGRES_SERVER_DATABASE_NAME_HERE
 
 Make sure to replace the placeholders with your own values.
 
-### Set a random string
+### Set random strings
 
-You also need to set a random secure string. To do so, add the following configuration to your `vars.yml` file. The value can be generated with `pwgen -s 64 1` or in another way.
+You also need to set random secure strings. To do so, add the following configuration to your `vars.yml` file. The value can be generated with `pwgen -s 64 1` or in another way.
 
 ```yaml
-mobilizon_environment_variables_jwt_secret: YOUR_SECRET_KEY_HERE
+mobilizon_environment_variables_secret_key_base: YOUR_SECRET_KEY_HERE
+
+mobilizon_environment_variables_secret_key: YOUR_SECRET_KEY_HERE
 ```
 
-### Configure the mailer
+### Enabling signing up (optional)
 
-It is also necessary to configure a mailer to enable email functions such as creating the first administrator user. For the mailer you can use a SMTP server, Mailgun, or Amazon SES (Simple Email Service).
-
-To specify the email address from which messages will be sent, add the following configuration to your `vars.yml` file:
+By default this role is configured to disable signing up for an account on the service. To enable it, add the following configuration to your `vars.yml` file:
 
 ```yaml
-mobilizon_environment_variables_email_noreply: YOUR_EMAIL_ADDRESS_HERE
+mobilizon_environment_variables_registrations_open: true
 ```
 
-To configure a SMTP server, add the following configuration to your `vars.yml` file as below (adapt to your needs):
+### Configuring the mailer (optional)
+
+You can configure a SMTP mailer to enable it for signing up, verifying or changing email address, resetting password, and sending reports.
+
+To configure it, add the following configuration to your `vars.yml` file as below (adapt to your needs):
 
 ```yaml
-# Control if SMTP server is enabled as the email sender
-mobilizon_mailer_smtp_enabled: true
+# Set the hostname of the SMTP server
+mobilizon_environment_variables_email_smtp_server: ""
 
-# Specify SMTP server hostname
-mobilizon_environment_variables_email_smtp_host: ""
-
-# Specify SMTP server port
+# Set the port number of the SMTP server
 mobilizon_environment_variables_email_smtp_port: 587
 
-# Specify SMTP server username
+# Set the username for the SMTP server
 mobilizon_environment_variables_email_smtp_username: ""
 
-# Specify SMTP server password
+# Set the password for the SMTP server
 mobilizon_environment_variables_email_smtp_password: ""
 
-# Set `true` to enable STARTTLS
-mobilizon_environment_variables_email_smtp_enable_starttls: ""
-```
+# Set the email address that emails will be sent from
+mobilizon_environment_variables_instance_email: ""
 
-See [this section](https://docs.mobilizon.io/hosting-instance/#installing-and-running) on the official documentation for details about how to configure the mailer for Railgun or Amazon SES.
+# Set the email address that will receive emails
+mobilizon_environment_variables_email_reply_email: ""
+
+# Set to `true` if SSL is used for communication with the SMTP server
+mobilizon_environment_variables_email_smtp_ssl: true
+```
 
 >[!WARNING]
 > Without setting an authentication method such as DKIM, SPF, and DMARC for your hostname, emails are most likely to be quarantined as spam at recipient's mail servers. The worst scenario is that your server's IP address or hostname will be included in the spam list such as the one managed by [Spamhaus](https://www.spamhaus.org/). If you have set up a mail server with the [MASH project's exim-relay Ansible role](https://github.com/mother-of-all-self-hosting/ansible-role-exim-relay), you can enable DKIM signing with it. Refer [its documentation](https://github.com/mother-of-all-self-hosting/ansible-role-exim-relay/blob/main/docs/configuring-exim-relay.md#enable-dkim-support-optional) for details.
-
-### Integrating with Prometheus (optional)
-
-Mobilizon can natively expose metrics to Prometheus.
-
-If you are looking for an integration, you can check out the MASH playbook. See [this section of the documentation on the playbook](https://github.com/mother-of-all-self-hosting/mash-playbook/blob/main/docs/services/mobilizon.md#integrating-with-prometheus-optional) for more information.
 
 ### Extending the configuration
 
@@ -139,7 +141,7 @@ Take a look at:
 
 - [`defaults/main.yml`](../defaults/main.yml) for some variables that you can customize via your `vars.yml` file. You can override settings (even those that don't have dedicated playbook variables) using the `mobilizon_environment_variables_additional_variables` variable
 
-See [this page](https://docs.mobilizon.io/hosting-instance/) on the official documentation for a complete list of Mobilizon's config options that you could put in `mobilizon_environment_variables_additional_variables`.
+See [this page](https://framagit.org/kaihuri/mobilizon-docker/-/blob/master/env.template) on the official documentation for a complete list of Mobilizon's config options that you could put in `mobilizon_environment_variables_additional_variables`.
 
 ## Installing
 
@@ -155,7 +157,39 @@ If you use the MASH playbook, the shortcut commands with the [`just` program](ht
 
 After running the command for installation, Mobilizon becomes available at the specified hostname like `https://example.com`.
 
-To get started, open the URL with a web browser, and register the account. **Note that the first registered user becomes an administrator automatically.**
+To get started, create a user first and open the URL with a web browser to log in to the instance. You can create one on the web UI if `mobilizon_environment_variables_registrations_open` is set to `true`. Alternatively, you can run the command below to create users.
+
+### Creating users
+
+#### Creating a user manually
+
+You can create users by running the command below:
+
+```sh
+ansible-playbook -i inventory/hosts setup.yml --tags=create-user-mobilizon -e password=PASSWORD_HERE -e email=EMAIL_ADDRESS_HERE
+```
+
+Run `create-admin-mobilizon` to create an administrator.
+
+#### Creating users automatically
+
+It is also possible to create muitiple users specified with `mobilizon_users_custom` on your `vars.yml` file by running the command below:
+
+```sh
+ansible-playbook -i inventory/hosts setup.yml --tags=ensure-mobilizon-users-created
+```
+
+Those users can be specified like below:
+
+```yaml
+mobilizon_users_custom:
+  - email: admin@example.com
+    initial_password: password
+    role: admin
+  - email: admin@example.com
+    initial_password: password
+    role: user
+```
 
 ## Troubleshooting
 
