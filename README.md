@@ -9,6 +9,9 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 This is an [Ansible](https://www.ansible.com/) role which installs [Mobilizon](https://joinmobilizon.org/en/) to run as a [Docker](https://www.docker.com/) container wrapped in a systemd service.
 
+>[!NOTE]
+> The project has been transferred from Framasoft to Kaihuri Association. See [this page](https://framablog.org/2023/12/05/mobilizon-v4-letape-de-la-maturite/) for details.
+
 This role *implicitly* depends on:
 
 - [`com.devture.ansible.role.playbook_help`](https://github.com/devture/com.devture.ansible.role.playbook_help)
