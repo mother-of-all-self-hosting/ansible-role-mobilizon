@@ -1,0 +1,21 @@
+# SPDX-FileCopyrightText: 2024 - 2025 Nikita Chernyi
+# SPDX-FileCopyrightText: 2026 Suguru Hirahara
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+---
+- name: "Ensure Mobilizon user registered - {{ user.email }}"
+  ansible.builtin.command:
+    cmd: >-
+      {{ devture_systemd_docker_base_host_command_docker }} exec
+      {{ mobilizon_identifier }}
+      mobilizon_ctl
+      users.new {{ user.email | quote }}
+      {% if user.role == 'admin' %}
+      --admin
+      {% endif %}
+      --password {{ user.initial_password | quote }}
+  register: mobilizon_create_account_result
+  changed_when: "'An user has been created with the following information' in mobilizon_create_account_result.stdout"
+  failed_when: mobilizon_create_account_result.rc > 0
+  no_log: true # Hide raw password
