@@ -1,0 +1,48 @@
+# SPDX-FileCopyrightText: 2023 Julian-Samuel Gebühr
+# SPDX-FileCopyrightText: 2024 Nikita Chernyi
+# SPDX-FileCopyrightText: 2026 Suguru Hirahara
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+---
+- name: Fail if playbook called incorrectly
+  ansible.builtin.fail:
+    msg: "The `password`, and `email` variables need to be provided via --extra-vars"
+  when: >-
+    password is not defined or password == 'PASSWORD_HERE' or
+    email is not defined or email == 'EMAIL_ADDRESS_HERE'
+
+- name: Set the initial role to 'user' when running 'create-user-mobilizon'
+  ansible.builtin.set_fact:
+    role: user
+  tags:
+    - create-user-mobilizon
+
+- name: Set the initial role to 'admin' when running 'create-admin-mobilizon'
+  ansible.builtin.set_fact:
+    role: admin
+  tags:
+    - create-admin-mobilizon
+
+- name: Set user details
+  ansible.builtin.set_fact:
+    user:
+      email: "{{ email }}"
+      initial_password: "{{ initial_password }}"
+      role: "{{ role }}"
+
+- name: Ensure Mobilizon service is started
+  ansible.builtin.service:
+    name: "{{ mobilizon_identifier }}"
+    state: started
+    daemon_reload: true
+  register: start_result
+
+- name: Wait a while, so that the Mobilizon instance can manage to start
+  ansible.builtin.pause:
+    seconds: 7
+  when: "start_result.changed"
+
+- name: "Ensure Mobilizon user is created - {{ user.email }}"
+  ansible.builtin.include_tasks: "{{ role_path }}/tasks/util/ensure_user_registered.yml"
+  no_log: true
