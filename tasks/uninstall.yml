@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: 2023 Julian-Samuel Gebühr
-# SPDX-FileCopyrightText: 2025 Suguru Hirahara
+# SPDX-FileCopyrightText: 2023 Slavi Pantaleev
+# SPDX-FileCopyrightText: 2025, 2026 Suguru Hirahara
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
@@ -18,6 +19,54 @@
         state: stopped
         enabled: false
         daemon_reload: true
+
+    - name: Ensure Mobilizon systemd service does not exist
+      ansible.builtin.file:
+        path: "{{ devture_systemd_docker_base_systemd_path }}/{{ mobilizon_identifier }}.service"
+        state: absent
+
+    - name: Ensure Mobilizon support files do not exist
+      ansible.builtin.file:
+        path: "{{ mobilizon_base_path }}/{{ item }}"
+        state: absent
+      with_items:
+        - env
+        - labels
+
+    - name: Ensure Mobilizon local config path does not exist if empty
+      ansible.builtin.command:
+        cmd: "rmdir {{ mobilizon_config_path }}"
+      register: mobilizon_config_path_deletion_result
+      changed_when: mobilizon_config_path_deletion_result.rc == 0
+      failed_when: false
+
+    - name: Ensure Mobilizon local tzdata path does not exist if empty
+      ansible.builtin.command:
+        cmd: "rmdir {{ mobilizon_tzdata_path }}"
+      register: mobilizon_tzdata_path_deletion_result
+      changed_when: mobilizon_tzdata_path_deletion_result.rc == 0
+      failed_when: false
+
+    - name: Ensure Mobilizon local uploads path does not exist if empty
+      ansible.builtin.command:
+        cmd: "rmdir {{ mobilizon_uploads_path }}"
+      register: mobilizon_uploads_path_deletion_result
+      changed_when: mobilizon_uploads_path_deletion_result.rc == 0
+      failed_when: false
+
+    - name: Ensure Mobilizon local data path does not exist if empty
+      ansible.builtin.command:
+        cmd: "rmdir {{ mobilizon_data_path }}"
+      register: mobilizon_data_path_deletion_result
+      changed_when: mobilizon_data_path_deletion_result.rc == 0
+      failed_when: false
+
+    - name: Ensure Mobilizon base path does not exist if empty
+      ansible.builtin.command:
+        cmd: "rmdir {{ mobilizon_base_path }}"
+      register: mobilizon_base_path_deletion_result
+      changed_when: mobilizon_base_path_deletion_result.rc == 0
+      failed_when: false
 
     - name: Ensure Mobilizon container network does not exist
       when: mobilizon_container_network_deletion_enabled
@@ -38,12 +87,20 @@
           register: mobilizon_network_deletion_result
           changed_when: mobilizon_container_network in mobilizon_network_deletion_result.stdout
 
-    - name: Ensure Mobilizon systemd service does not exist
-      ansible.builtin.file:
-        path: "{{ devture_systemd_docker_base_systemd_path }}/{{ mobilizon_identifier }}.service"
-        state: absent
+- name: Check existence of Mobilizon local data path
+  ansible.builtin.stat:
+    path: "{{ mobilizon_data_path }}"
+  register: mobilizon_data_path_stat
 
-    - name: Ensure Mobilizon path does not exist
-      ansible.builtin.file:
-        path: "{{ mobilizon_base_path }}"
-        state: absent
+# We just want to notify the user. Deleting data is too destructive.
+- name: Inject the message about the remaining Mobilizon local data path
+  when: mobilizon_data_path_stat.stat.exists | bool
+  ansible.builtin.set_fact:
+    devture_playbook_runtime_messages_list: |
+      {{
+        devture_playbook_runtime_messages_list | default([])
+        +
+        [
+          "Note: As the local Mobilizon instance has been removed, some old data remains in `" + mobilizon_data_path + "`. Feel free to delete it."
+        ]
+      }}

@@ -12,10 +12,10 @@
     group: "{{ mobilizon_gid }}"
   with_items:
     - "{{ mobilizon_base_path }}"
-    - "{{ mobilizon_data_path }}"
-    - "{{ mobilizon_uploads_path }}"
-    - "{{ mobilizon_tzdata_path }}"
     - "{{ mobilizon_config_path }}"
+    - "{{ mobilizon_data_path }}"
+    - "{{ mobilizon_tzdata_path }}"
+    - "{{ mobilizon_uploads_path }}"
 
 - name: Ensure Mobilizon support files installed
   ansible.builtin.template:
