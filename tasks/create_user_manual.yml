@@ -28,6 +28,7 @@
       initial_email: "{{ email }}"
       initial_password: "{{ password }}"
       initial_role: "{{ initial_role }}"
+  no_log: true # hide raw password
 
 - name: Ensure Mobilizon service is started
   ansible.builtin.service:
