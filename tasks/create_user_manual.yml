@@ -7,10 +7,10 @@
 ---
 - name: Fail if playbook called incorrectly for Mobilizon
   ansible.builtin.fail:
-    msg: "The `password`, and `email` variables need to be provided via --extra-vars"
+    msg: "The `email` and `password` variables need to be provided via --extra-vars"
   when: >-
-    password is not defined or password == 'PASSWORD_HERE' or
-    email is not defined or email == 'EMAIL_ADDRESS_HERE'
+    email is not defined or email == 'EMAIL_ADDRESS_HERE' or
+    password is not defined or password == 'PASSWORD_HERE'
 
 - name: Set the initial role to 'user' when running 'create-user-mobilizon' for Mobilizon
   ansible.builtin.set_fact:
