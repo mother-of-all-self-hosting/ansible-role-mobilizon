@@ -20,7 +20,6 @@
       You need to define a required configuration setting (`{{ item }}`).
   when: "lookup('vars', item, default='') | string | length == 0"
   with_items:
-    - mobilizon_identifier
     - mobilizon_uid
     - mobilizon_gid
     - mobilizon_hostname
