@@ -13,10 +13,10 @@
     group: "{{ mobilizon_gid }}"
   with_items:
     - "{{ mobilizon_base_path }}"
-    - "{{ mobilizon_data_path }}"
-    - "{{ mobilizon_uploads_path }}"
-    - "{{ mobilizon_tzdata_path }}"
     - "{{ mobilizon_config_path }}"
+    - "{{ mobilizon_data_path }}"
+    - "{{ mobilizon_tzdata_path }}"
+    - "{{ mobilizon_uploads_path }}"
 
 - name: Ensure Mobilizon support files installed
   ansible.builtin.template:
@@ -28,12 +28,22 @@
   with_items:
     - env
     - labels
+  register: mobilizon_support_files_result
 
-- name: Ensure Mobilizon image is pulled
-  community.docker.docker_image:
-    name: "{{ mobilizon_container_image }}"
-    source: "{{ 'pull' if ansible_version.major > 2 or ansible_version.minor > 7 else omit }}"
+- name: Run if self-building of Mobilizon container image is not enabled
   when: "not mobilizon_container_image_self_build | bool"
+  block:
+    - name: Ensure Mobilizon container image is pulled via community.docker.docker_image
+      when: devture_systemd_docker_base_container_image_pull_method == 'ansible-module'
+      community.docker.docker_image:
+        name: "{{ mobilizon_container_image }}"
+        source: "{{ 'pull' if ansible_version.major > 2 or ansible_version.minor > 7 else omit }}"
+        force_source: "{{ mobilizon_container_image_force_pull if ansible_version.major > 2 or ansible_version.minor >= 8 else omit }}"
+        force: "{{ omit if ansible_version.major > 2 or ansible_version.minor >= 8 else mobilizon_container_image_force_pull }}"
+      register: mobilizon_container_image_pull_result_ansible_module
+      retries: "{{ devture_playbook_help_container_retries_count }}"
+      delay: "{{ devture_playbook_help_container_retries_delay }}"
+      until: mobilizon_container_image_pull_result_ansible_module is not failed
 
 - name: Modify Mobilizon config.exs file
   when: mobilizon_oidc_client_enabled | bool
@@ -81,17 +91,29 @@
   register: mobilizon_git_pull_results
   when: "mobilizon_container_image_self_build | bool"
 
-- name: Ensure Mobilizon image is built
-  community.docker.docker_image:
-    name: "{{ mobilizon_container_image_name }}"
-    source: build
-    force_source: "{{ mobilizon_git_pull_results.changed if ansible_version.major > 2 or ansible_version.minor >= 8 else omit }}"
-    force: "{{ omit if ansible_version.major > 2 or ansible_version.minor >= 8 else matrix_mailer_git_pull_results.changed }}"
-    build:
-      dockerfile: Dockerfile
-      path: "{{ mobilizon_container_src_files_path }}"
-      pull: true
+- name: Run if self-building of Mobilizon container image is enabled
   when: "mobilizon_container_image_self_build | bool"
+  block:
+    - name: Ensure Mobilizon repository is present on self-build
+      ansible.builtin.git:
+        repo: "{{ mobilizon_container_image_self_build_repo }}"
+        version: "{{ mobilizon_container_image_self_build_repo_version }}"
+        dest: "{{ mobilizon_container_image_self_build_src_files_path }}"
+        force: "yes"
+      register: mobilizon_git_pull_results
+
+    - name: Ensure Mobilizon container image is built
+      community.docker.docker_image:
+        name: "{{ mobilizon_container_image_self_build_name }}"
+        source: build
+        force_source: "{{ mobilizon_git_pull_results.changed if ansible_version.major > 2 or ansible_version.minor >= 8 else omit }}"
+        force: "{{ omit if ansible_version.major > 2 or ansible_version.minor >= 8 else mobilizon_git_pull_results.changed }}"
+        build:
+          dockerfile: Dockerfile
+          path: "{{ mobilizon_container_image_self_build_src_files_path }}"
+          pull: true
+          args:
+      register: mobilizon_container_image_build_result
 
 - name: Ensure Mobilizon container network is created via community.docker.docker_network
   when: devture_systemd_docker_base_container_network_creation_method == 'ansible-module'
@@ -119,3 +141,15 @@
     src: "{{ role_path }}/templates/systemd/mobilizon.service.j2"
     dest: "{{ devture_systemd_docker_base_systemd_path }}/{{ mobilizon_identifier }}.service"
     mode: "0644"
+  register: mobilizon_systemd_service_result
+
+- name: Determine whether Mobilizon needs a restart
+  ansible.builtin.set_fact:
+    mobilizon_restart_necessary: >-
+      {{
+        mobilizon_support_files_result.changed | default(false)
+        or mobilizon_systemd_service_result.changed | default(false)
+        or mobilizon_container_image_pull_result_ansible_module.changed | default(false)
+        or mobilizon_container_image_pull_result_command.changed | default(false)
+        or mobilizon_container_image_build_result.changed | default(false)
+      }}

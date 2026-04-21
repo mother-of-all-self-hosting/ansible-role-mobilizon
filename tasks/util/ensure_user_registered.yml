@@ -4,14 +4,14 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 ---
-- name: "Ensure Mobilizon user registered - {{ user.email }}"
+- name: "Ensure Mobilizon user registered — {{ user.initial_email }}"
   ansible.builtin.command:
     cmd: >-
       {{ devture_systemd_docker_base_host_command_docker }} exec
       {{ mobilizon_identifier }}
       mobilizon_ctl
-      users.new {{ user.email | quote }}
-      {% if user.role == 'admin' %}
+      users.new {{ user.initial_email | quote }}
+      {% if user.initial_role == 'admin' %}
       --admin
       {% endif %}
       --password {{ user.initial_password | quote }}

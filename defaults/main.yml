@@ -15,10 +15,10 @@ mobilizon_enabled: true
 
 mobilizon_identifier: mobilizon
 mobilizon_base_path: "/{{ mobilizon_identifier }}"
-mobilizon_data_path: "{{ mobilizon_base_path }}/data"
-mobilizon_uploads_path: "{{ mobilizon_data_path }}/uploads"
-mobilizon_tzdata_path: "{{ mobilizon_data_path }}/tzdata"
 mobilizon_config_path: "{{ mobilizon_base_path }}/config"
+mobilizon_data_path: "{{ mobilizon_base_path }}/data" # holds the paths below
+mobilizon_tzdata_path: "{{ mobilizon_data_path }}/tzdata"
+mobilizon_uploads_path: "{{ mobilizon_data_path }}/uploads"
 
 # renovate: datasource=docker depName=kaihuri/mobilizon
 mobilizon_version: 5.2.3
@@ -36,16 +36,18 @@ mobilizon_hostname: ""
 # This value must either be `/` or not end with a slash (e.g. `/mobilizon`).
 mobilizon_path_prefix: /
 
-mobilizon_container_image: "{{ mobilizon_container_image_registry_prefix }}{{ mobilizon_container_image_name }}"
-mobilizon_container_image_name: "kaihuri/mobilizon:{{ mobilizon_container_image_tag }}"
-mobilizon_container_image_registry_prefix: docker.io/
+mobilizon_container_image: "{{ mobilizon_container_image_registry_prefix }}kaihuri/mobilizon:{{ mobilizon_container_image_tag }}"
 mobilizon_container_image_tag: "{{ mobilizon_version }}"
+mobilizon_container_image_registry_prefix: "{{ mobilizon_container_image_registry_prefix_upstream }}"
+mobilizon_container_image_registry_prefix_upstream: "{{ mobilizon_container_image_registry_prefix_upstream_default }}"
+mobilizon_container_image_registry_prefix_upstream_default: docker.io/
 mobilizon_container_image_force_pull: "{{ mobilizon_container_image.endswith(':latest') }}"
 
 mobilizon_container_image_self_build: false
-mobilizon_container_repo: "https://framagit.org/kaihuri/mobilizon.git"
-mobilizon_container_repo_version: "{{ mobilizon_version if mobilizon_version != 'latest' else 'main' }}"
-mobilizon_container_src_files_path: "{{ mobilizon_base_path }}/docker-src"
+mobilizon_container_image_self_build_name: "kaihuri/mobilizon:{{ mobilizon_container_image_self_build_repo_version }}"
+mobilizon_container_image_self_build_repo: "https://framagit.org/kaihuri/mobilizon.git"
+mobilizon_container_image_self_build_repo_version: "{{ mobilizon_version if mobilizon_version != 'latest' else 'main' }}"
+mobilizon_container_image_self_build_src_files_path: "{{ mobilizon_base_path }}/docker-src"
 
 # The base container network. It will be auto-created by this role if it doesn't exist already.
 mobilizon_container_network: "{{ mobilizon_identifier }}"
@@ -238,17 +240,25 @@ mobilizon_container_cleanup_command: |
   echo "Failed to remove stale container {{ mobilizon_identifier }} after {{ mobilizon_container_cleanup_timeout_seconds }} attempts" >&2;
   exit 1
 
+# Specify database configuration
+mobilizon_database_hostname: ""
+mobilizon_database_port: 5432
+mobilizon_database_username: mobilizon
+mobilizon_database_password: ""
+mobilizon_database_sslmode: false
+mobilizon_database_name: mobilizon
+
 # mobilizon_users contains a list of users that should be created automatically
 # To add your own users for specific host, use `mobilizon_users_custom`
 #
 # Example:
 # mobilizon_users_custom:
-#   - email: admin@example.com
+#   - initial_email: admin@example.com
 #     initial_password: password
-#     role: admin
-#   - email: admin@example.com
+#     initial_role: admin
+#   - initial_email: user@example.com
 #     initial_password: password
-#     role: user
+#     initial_role: user
 mobilizon_users: "{{ mobilizon_users_auto + mobilizon_users_custom }}"
 mobilizon_users_auto: []
 mobilizon_users_custom: []
@@ -284,14 +294,6 @@ mobilizon_environment_variables_email_reply_email: ""
 # Specify log level
 mobilizon_environment_variables_loglevel: error
 
-# Specify database configuration
-mobilizon_database_hostname: ""
-mobilizon_database_port: 5432
-mobilizon_database_username: mobilizon
-mobilizon_database_password: ""
-mobilizon_database_sslmode: false
-mobilizon_database_name: mobilizon
-
 # Specify a secret key used as a base to generate secrets for encrypting and signing data
 # generated with `pwgen -s 64 1` or in another way.
 mobilizon_environment_variables_secret_key_base: ""
@@ -310,3 +312,13 @@ mobilizon_environment_variables_email_smtp_tls: if_available
 
 # Additional environment variables.
 mobilizon_environment_variables_additional_variables: ""
+
+# mobilizon_restart_necessary controls whether the Mobilizon systemd
+# service will be restarted (when true) or merely started (when false) by the
+# systemd service manager role (when conditional restart is enabled).
+#
+# This value is automatically computed during installation based on whether
+# any configuration files, the systemd service file, or the container image changed.
+# The default of `false` means "no restart needed" — appropriate when the role's
+# installation tasks haven't run (e.g., due to --tags skipping them).
+mobilizon_restart_necessary: false
