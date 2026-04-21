@@ -4,6 +4,7 @@
 # SPDX-FileCopyrightText: 2023-2025 Slavi Pantaleev
 # SPDX-FileCopyrightText: 2024 Sergio Durigan Junior
 # SPDX-FileCopyrightText: 2025, 2026 Suguru Hirahara
+# SPDX-FileCopyrightText: 2026 Timofej Luitle
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
@@ -261,6 +262,19 @@ mobilizon_database_name: mobilizon
 mobilizon_users: "{{ mobilizon_users_auto + mobilizon_users_custom }}"
 mobilizon_users_auto: []
 mobilizon_users_custom: []
+
+# OAuth2 configuration (through ueberauth_keycloak_strategy)
+# Documentated at https://docs.mobilizon.org/3.%20System%20administration/configure/auth/#oauth
+# Other OpenID Connect providers should work with this strategy as well, such as Nextcloud with the "oidc" app
+mobilizon_oidc_client_enabled: false
+mobilizon_oidc_provider_name: "OpenID Connect"
+mobilizon_oidc_client_id: ""
+mobilizon_oidc_client_secret: ""
+mobilizon_oidc_issuer_url: ""
+mobilizon_oidc_authorize_url: ""
+mobilizon_oidc_token_url: ""
+mobilizon_oidc_userinfo_url: ""
+mobilizon_oidc_scopes: "openid email profile"
 
 # Specify the timezone
 mobilizon_environment_variables_tz: UTC

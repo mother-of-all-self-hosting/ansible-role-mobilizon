@@ -1,4 +1,5 @@
 # SPDX-FileCopyrightText: 2023 Julian-Samuel Gebühr
+# SPDX-FileCopyrightText: 2026 Timofej Luitle
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
@@ -44,15 +45,51 @@
       delay: "{{ devture_playbook_help_container_retries_delay }}"
       until: mobilizon_container_image_pull_result_ansible_module is not failed
 
-    - name: Ensure Mobilizon container image is pulled via ansible.builtin.command
-      when: devture_systemd_docker_base_container_image_pull_method == 'command'
-      ansible.builtin.command:
-        cmd: "{{ devture_systemd_docker_base_host_command_docker }} pull {{ mobilizon_container_image }}"
-      register: mobilizon_container_image_pull_result_command
-      retries: "{{ devture_playbook_help_container_retries_count }}"
-      delay: "{{ devture_playbook_help_container_retries_delay }}"
-      until: mobilizon_container_image_pull_result_command is not failed
-      changed_when: "'Downloaded newer image' in mobilizon_container_image_pull_result_command.stdout"
+- name: Modify Mobilizon config.exs file
+  when: mobilizon_oidc_client_enabled | bool
+  block:
+    - name: Start Mobilizon container
+      community.docker.docker_container:
+        name: "mobilizon_mount_files"
+        image: "{{ mobilizon_container_image }}"
+        state: started
+
+    - name: Copy config.exs from running container
+      ansible.builtin.command: >-
+        {{ devture_systemd_docker_base_host_command_docker }} cp mobilizon_mount_files:/etc/mobilizon/config.exs {{ mobilizon_config_path }}/config.exs
+      changed_when: true
+
+    - name: Stop Mobilizon container
+      community.docker.docker_container:
+        name: "mobilizon_mount_files"
+        state: stopped
+
+    - name: Ensure Mobilizon oidc.exs is installed
+      when: mobilizon_oidc_client_enabled | bool
+      ansible.builtin.template:
+        src: "{{ role_path }}/templates/config/oidc.exs.j2"
+        dest: "{{ mobilizon_config_path }}/oidc.exs"
+        mode: "0640"
+        owner: "{{ mobilizon_uid }}"
+        group: "{{ mobilizon_gid }}"
+
+    - name: Append oidc.exs to config.exs
+      ansible.builtin.assemble:
+        src:  "{{ mobilizon_config_path }}"
+        dest: "{{ mobilizon_config_path }}/config.exs"
+        delimiter: "\n"
+        mode: "0640"
+        owner: "{{ mobilizon_uid }}"
+        group: "{{ mobilizon_gid }}"
+
+- name: Ensure Mobilizon repository is present on self-build
+  ansible.builtin.git:
+    repo: "{{ mobilizon_container_repo }}"
+    version: "{{ mobilizon_container_repo_version }}"
+    dest: "{{ mobilizon_container_src_files_path }}"
+    force: "yes"
+  register: mobilizon_git_pull_results
+  when: "mobilizon_container_image_self_build | bool"
 
 - name: Run if self-building of Mobilizon container image is enabled
   when: "mobilizon_container_image_self_build | bool"
