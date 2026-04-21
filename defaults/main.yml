@@ -253,8 +253,9 @@ mobilizon_users: "{{ mobilizon_users_auto + mobilizon_users_custom }}"
 mobilizon_users_auto: []
 mobilizon_users_custom: []
 
-# OAuth2 configuration (through OpenID Connect)
-# Other OpenID Connect providers should work with this provider as well, such as Nextcloud with the "oidc" app
+# OAuth2 configuration (through ueberauth_keycloak_strategy)
+# Documentated at https://docs.mobilizon.org/3.%20System%20administration/configure/auth/#oauth
+# Other OpenID Connect providers should work with this strategy as well, such as Nextcloud with the "oidc" app
 mobilizon_oidc_client_enabled: false
 mobilizon_oidc_provider_name: "OpenID Connect"
 mobilizon_oidc_client_id: ""
