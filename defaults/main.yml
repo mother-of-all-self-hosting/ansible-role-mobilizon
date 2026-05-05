@@ -40,7 +40,6 @@ mobilizon_container_image_tag: "{{ mobilizon_version }}"
 mobilizon_container_image_registry_prefix: "{{ mobilizon_container_image_registry_prefix_upstream }}"
 mobilizon_container_image_registry_prefix_upstream: "{{ mobilizon_container_image_registry_prefix_upstream_default }}"
 mobilizon_container_image_registry_prefix_upstream_default: docker.io/
-mobilizon_container_image_force_pull: "{{ mobilizon_container_image.endswith(':latest') }}"
 
 mobilizon_container_image_self_build: false
 mobilizon_container_image_self_build_name: "kaihuri/mobilizon:{{ mobilizon_container_image_self_build_repo_version }}"
