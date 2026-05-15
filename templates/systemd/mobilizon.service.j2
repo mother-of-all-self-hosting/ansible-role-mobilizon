@@ -1,6 +1,7 @@
 {#
 SPDX-FileCopyrightText: 2023 Julian-Samuel Gebühr
 SPDX-FileCopyrightText: 2026 Suguru Hirahara
+SPDX-FileCopyrightText: 2026 Timofej Luitle
 
 SPDX-License-Identifier: AGPL-3.0-or-later
 #}
@@ -38,7 +39,8 @@ ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
       --env-file={{ mobilizon_base_path }}/env \
       --label-file={{ mobilizon_base_path }}/labels \
       --health-interval={{ mobilizon_container_health_interval }} \
-      --mount type=bind,src={{ mobilizon_uploads_path }},dst=/var/lib/mobilizon/uploads \
+      --mount type=bind,src={{ mobilizon_config_path }}/config.exs,dst=/etc/mobilizon/config.exs \
+      --mount type=bind,src={{ mobilizon_data_path }}/uploads,dst=/var/lib/mobilizon/uploads \
       --mount type=bind,src={{ mobilizon_tzdata_path }},dst=/var/lib/mobilizon/tzdata \
       {% for volume in mobilizon_container_additional_volumes %}
       --mount type={{ volume.type | default('bind' if '/' in volume.src else 'volume') }},src={{ volume.src }},dst={{ volume.dst }}{{ (',' + volume.options) if volume.options | default('') else '' }} \
