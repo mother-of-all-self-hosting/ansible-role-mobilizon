@@ -1,0 +1,53 @@
+# SPDX-FileCopyrightText: 2026 Suguru Hirahara
+# SPDX-FileCopyrightText: 2026 spatterlight
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+---
+- name: Verify Mobilizon systemd service
+  hosts: all
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Wait for Mobilizon service to become active (up to 180s)
+      ansible.builtin.systemd:
+        name: mobilizon.service
+      register: mobilizon_service
+      until: mobilizon_service.status.ActiveState == 'active'
+      retries: 36
+      delay: 5
+
+    - name: Assert Mobilizon service is active
+      ansible.builtin.assert:
+        that: mobilizon_service.status.ActiveState == 'active'
+        fail_msg: "mobilizon.service not active ({{ mobilizon_service.status.ActiveState }})"
+        success_msg: "mobilizon.service is active"
+
+    - name: Retrieve Mobilizon service log for debugging
+      when: mobilizon_debug_service_enabled | bool
+      ansible.builtin.command:
+        cmd: journalctl -xeu mobilizon.service
+      changed_when: false
+
+    - name: Wait for Mobilizon HTTP endpoint to respond (up to 10m)
+      ansible.builtin.uri:
+        url: "http://localhost:4000/"
+        method: GET
+        status_code: [200, 301, 302]
+        follow_redirects: none
+      register: mobilizon_endpoint
+      until: mobilizon_endpoint.status in [200, 301, 302]
+      retries: 120
+      delay: 5
+
+    - name: Assert Mobilizon HTTP endpoint responds
+      ansible.builtin.assert:
+        that: mobilizon_endpoint.status in [200, 301, 302]
+        fail_msg: "Mobilizon did not respond as expected ({{ mobilizon_endpoint.status | default('no response') }})"
+        success_msg: "Mobilizon responded with {{ mobilizon_endpoint.status }}"
+
+    - name: Show Mobilizon systemd service status summary
+      ansible.builtin.debug:
+        msg:
+          - "Mobilizon systemd: {{ mobilizon_service.status.ActiveState }}"
+          - "Mobilizon HTTP: {{ mobilizon_endpoint.status }}"
