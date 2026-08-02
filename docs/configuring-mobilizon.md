@@ -32,6 +32,9 @@ To run a Mobilizon instance it is necessary to prepare a [Postgres](https://www.
 
 If you are looking for an Ansible role for Postgres with PostGIS extensions installed, you can check out [ansible-role-postgis](https://github.com/mother-of-all-self-hosting/ansible-role-postgis) maintained by the [Mother-of-All-Self-Hosting (MASH)](https://github.com/mother-of-all-self-hosting) team.
 
+>[!NOTE]
+> Mobilizon seems to be incompatible with Postgres v18 as database migration fails due to an error like this one: `** (Postgrex.Error) ERROR 42P16 (invalid_table_definition) primary key column "id" is not marked NOT NULL`.
+
 ## Adjusting the playbook configuration
 
 To enable Mobilizon with this role, add the following configuration to your `vars.yml` file.
