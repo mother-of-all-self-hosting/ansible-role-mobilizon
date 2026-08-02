@@ -30,7 +30,7 @@
       ansible.builtin.systemd_service:
         daemon_reload: true
 
-    - name: Ensure Postgis systemd service is started
+    - name: Ensure PostGIS systemd service is started
       ansible.builtin.systemd_service:
         name: postgis.service
         state: started
