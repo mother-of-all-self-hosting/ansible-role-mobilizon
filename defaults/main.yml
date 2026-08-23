@@ -19,7 +19,7 @@ mobilizon_data_path: "{{ mobilizon_base_path }}/data" # holds the paths below
 mobilizon_tzdata_path: "{{ mobilizon_data_path }}/tzdata"
 mobilizon_uploads_path: "{{ mobilizon_data_path }}/uploads"
 
-# renovate: datasource=docker depName=kaihuri/mobilizon
+# renovate: datasource=docker depName=kaihuri/mobilizon versioning=semver
 mobilizon_version: 5.2.4
 
 mobilizon_uid: ""
