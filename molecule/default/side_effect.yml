@@ -1,0 +1,39 @@
+# SPDX-FileCopyrightText: 2026 Slavi Pantaleev
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+---
+- name: Create the Mobilizon administrator account
+  hosts: all
+  become: true
+  gather_facts: false
+  tasks:
+    # The role tags its user-creation tasks `molecule-notest`, so `converge`
+    # never reaches them. Including the task file directly runs the real code
+    # path (`mobilizon_ctl users.new` inside the container) that a playbook
+    # operator invokes with `--tags=ensure-mobilizon-users-created`.
+    #
+    # This role only defines variables; it is included because the task file
+    # below reads `devture_systemd_docker_base_host_command_docker` from it.
+    - name: Include roles for Mobilizon Molecule side effects
+      ansible.builtin.include_role:
+        name: com.devture.ansible.role.systemd_docker_base
+        public: true
+
+    # `mobilizon_ctl users.new` talks to the running Erlang node, so the account
+    # cannot be created until Mobilizon has finished its startup migrations and
+    # is serving. Booting takes a while on a Molecule runner.
+    - name: Wait for Mobilizon to finish starting up (up to 10m)
+      ansible.builtin.uri:
+        url: "http://localhost:{{ mobilizon_container_http_host_bind_port }}/.well-known/nodeinfo/2.1"
+        method: GET
+        follow_redirects: none
+      register: mobilizon_startup_probe
+      until: mobilizon_startup_probe.status == 200
+      retries: 120
+      delay: 5
+
+    - name: Ensure Mobilizon users configured by the role are created
+      ansible.builtin.include_role:
+        name: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"
+        tasks_from: create_users_auto.yml

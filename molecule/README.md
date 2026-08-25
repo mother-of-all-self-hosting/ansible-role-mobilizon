@@ -47,7 +47,17 @@ Currently there is one testing scenario available.
 
 ### `default`
 
-Tests a standard Mobilizon installation.
+Tests a standard Mobilizon installation against a [PostGIS](https://github.com/mother-of-all-self-hosting/ansible-role-postgis) database.
+
+Besides installing the role, the scenario exercises the deployment end to end:
+
+- it runs Mobilizon on a port the container image does not listen on by default, so that an HTTP response is proof that `mobilizon_container_http_port` reached the process rather than being decorative
+- it asserts that the version reported over `nodeinfo` and over the GraphQL API is the `mobilizon_version` that [`defaults/main.yml`](../defaults/main.yml) ships (the container image's `org.opencontainers.image.version` label is empty, so it cannot be used for this)
+- it asserts that the instance name and the registration policy the role rendered into the `env` file are what Mobilizon actually runs with — an unconfigured image would report the name `Mobilizon` instead
+- it creates an administrator through the role's own `mobilizon_ctl users.new` code path, logs in over GraphQL, creates a profile, a group and an event with a physical address, and reads the group and the event back anonymously
+- it then reads those records straight out of the PostGIS container with `psql`, using `ST_X()`, `ST_Y()`, `GeometryType()` and `PostGIS_Lib_Version()` — functions which do not exist without the PostGIS extension, so the query proves both that the database this role wired up is the one Mobilizon writes to, and that it really is PostGIS-enabled
+
+An unconfigured Mobilizon container never serves HTTP at all: its entrypoint loops on `pg_isready` until a database answers, runs the Ecto migrations, and only then starts serving. `Restart=always` nevertheless keeps the systemd unit `active` the whole time, which is why the scenario treats `systemctl is-active` as a smoke gate only.
 
 ## Running
 

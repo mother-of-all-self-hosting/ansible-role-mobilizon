@@ -1,14 +1,45 @@
+# SPDX-FileCopyrightText: 2026 Slavi Pantaleev
 # SPDX-FileCopyrightText: 2026 spatterlight
 # SPDX-FileCopyrightText: 2026 Suguru Hirahara
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 ---
-- name: Verify Mobilizon systemd service
+- name: Verify Mobilizon
   hosts: all
   become: true
   gather_facts: false
+
+  vars:
+    mobilizon_molecule_base_url: "http://localhost:{{ mobilizon_container_http_host_bind_port }}"
+    mobilizon_molecule_api_url: "http://localhost:{{ mobilizon_container_http_host_bind_port }}/api"
+    mobilizon_molecule_geom: "{{ mobilizon_molecule_address_longitude }};{{ mobilizon_molecule_address_latitude }}"
+
   tasks:
+    # This role only defines variables; it is included because the tasks below
+    # read `devture_systemd_docker_base_host_command_docker` from it.
+    # `com.devture.ansible.role.playbook_help` is deliberately not included:
+    # it has tasks conditioned on `ansible_facts['os_family']`, which this play
+    # does not gather, and nothing here needs its variables.
+    - name: Include roles for Mobilizon Molecule verification
+      ansible.builtin.include_role:
+        name: com.devture.ansible.role.systemd_docker_base
+        public: true
+
+    # `mobilizon_version` is the leaf literal that Renovate bumps and that
+    # bin/compute-next-tag.sh derives the release tag from. Reading it here (and
+    # not from the scenario's own group_vars) is what makes the version
+    # assertion below a statement about what the role ships.
+    - name: Read Mobilizon role defaults
+      ansible.builtin.include_vars:
+        file: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}/defaults/main.yml"
+        name: mobilizon_role_defaults
+
+    # An unconfigured Mobilizon container never gets this far: its entrypoint
+    # loops on `pg_isready` until a database answers, then runs the Ecto
+    # migrations, and only then starts serving. `Restart=always` nevertheless
+    # keeps the unit "active" throughout, so this is a smoke gate and nothing
+    # more - every claim about the deployment is made by the assertions below.
     - name: Wait for Mobilizon service to become active (up to 180s)
       ansible.builtin.systemd:
         name: mobilizon.service
@@ -16,6 +47,9 @@
       until: mobilizon_service.status.ActiveState == 'active'
       retries: 36
       delay: 5
+      # So that giving up is reported by the assertion below rather than as a
+      # wall of systemd unit properties.
+      failed_when: false
 
     - name: Assert Mobilizon service is active
       ansible.builtin.assert:
@@ -29,25 +63,343 @@
         cmd: journalctl -xeu mobilizon.service
       changed_when: false
 
-    - name: Wait for Mobilizon HTTP endpoint to respond (up to 10m)
+    # The scenario runs Mobilizon on a port the container image does not use by
+    # default. Getting an answer here proves `mobilizon_container_http_port`
+    # reached the process through the role's `env` file, because the published
+    # port maps to that same port inside the container.
+    - name: Wait for Mobilizon nodeinfo endpoint to respond (up to 10m)
       ansible.builtin.uri:
-        url: "http://localhost:4000/"
+        url: "{{ mobilizon_molecule_base_url }}/.well-known/nodeinfo/2.1"
         method: GET
-        status_code: [200, 301, 302]
         follow_redirects: none
-      register: mobilizon_endpoint
-      until: mobilizon_endpoint.status in [200, 301, 302]
+      register: mobilizon_nodeinfo
+      until: mobilizon_nodeinfo.status == 200
       retries: 120
       delay: 5
+      # So that giving up is reported by the assertion below, which can say what
+      # the failure means, rather than as a bare connection error from `uri`.
+      failed_when: false
 
-    - name: Assert Mobilizon HTTP endpoint responds
+    - name: Assert Mobilizon is served on the port the role configured
       ansible.builtin.assert:
-        that: mobilizon_endpoint.status in [200, 301, 302]
-        fail_msg: "Mobilizon did not respond as expected ({{ mobilizon_endpoint.status | default('no response') }})"
-        success_msg: "Mobilizon responded with {{ mobilizon_endpoint.status }}"
+        that: mobilizon_nodeinfo.status == 200
+        fail_msg: >-
+          Mobilizon did not serve nodeinfo on port {{ mobilizon_container_http_port }}
+          ({{ mobilizon_nodeinfo.status | default('no response') }}), so
+          `mobilizon_container_http_port` did not reach the process
+        success_msg: "Mobilizon is served on the role-configured port {{ mobilizon_container_http_port }}"
 
-    - name: Show Mobilizon systemd service status summary
+    # This is what an automated version bump would have to be gated on: the
+    # software actually running is the version defaults/main.yml names. The
+    # image's `org.opencontainers.image.version` OCI label is empty, so nodeinfo
+    # is the honest surface here.
+    - name: Assert the running Mobilizon is the version the role ships
+      ansible.builtin.assert:
+        that: mobilizon_nodeinfo.json.software.version == mobilizon_role_defaults.mobilizon_version
+        fail_msg: >-
+          Running Mobilizon is {{ mobilizon_nodeinfo.json.software.version }},
+          but defaults/main.yml ships {{ mobilizon_role_defaults.mobilizon_version }}
+        success_msg: "Running Mobilizon is {{ mobilizon_nodeinfo.json.software.version }}, as defaults/main.yml says"
+
+    - name: Assert the software reported by nodeinfo is Mobilizon
+      ansible.builtin.assert:
+        that: mobilizon_nodeinfo.json.software.name == 'Mobilizon'
+        fail_msg: "nodeinfo reports {{ mobilizon_nodeinfo.json.software.name }}, not Mobilizon"
+        success_msg: "nodeinfo reports Mobilizon"
+
+    # Unset, `MOBILIZON_INSTANCE_NAME` defaults to "Mobilizon" and
+    # `MOBILIZON_INSTANCE_REGISTRATIONS_OPEN` to "false". The name asserted here
+    # can only have come out of the role's `env` template; the registration flag
+    # is asserted so that opening registration by default cannot pass unnoticed.
+    - name: Assert the role's env template reached the Mobilizon process
+      ansible.builtin.assert:
+        that:
+          - mobilizon_nodeinfo.json.metadata.nodeName == mobilizon_environment_variables_instance_name
+          - not mobilizon_nodeinfo.json.openRegistrations
+        fail_msg: >-
+          Mobilizon reports instance name
+          '{{ mobilizon_nodeinfo.json.metadata.nodeName }}' with registrations
+          open={{ mobilizon_nodeinfo.json.openRegistrations }}; expected
+          '{{ mobilizon_environment_variables_instance_name }}' with registrations closed
+        success_msg: "Mobilizon runs with the role-rendered instance name and registrations closed"
+
+    - name: Query the Mobilizon GraphQL API for its configuration
+      ansible.builtin.uri:
+        url: "{{ mobilizon_molecule_api_url }}"
+        method: POST
+        body_format: json
+        body:
+          query: "{ config { name version registrationsOpen } }"
+      register: mobilizon_graphql_config
+
+    - name: Assert the Mobilizon GraphQL API agrees with nodeinfo
+      ansible.builtin.assert:
+        that:
+          - mobilizon_graphql_config.json.errors is not defined
+          - mobilizon_graphql_config.json.data.config.version == mobilizon_role_defaults.mobilizon_version
+          - mobilizon_graphql_config.json.data.config.name == mobilizon_environment_variables_instance_name
+          - not mobilizon_graphql_config.json.data.config.registrationsOpen
+        fail_msg: "Mobilizon's GraphQL API reported {{ mobilizon_graphql_config.json | to_json }}"
+        success_msg: "Mobilizon's GraphQL API reports the role's version, instance name and registration policy"
+
+    # The account was created by the role's own task file, through
+    # `mobilizon_ctl users.new` inside the container (see side_effect.yml).
+    # Authenticating as it proves that path worked and that the credentials were
+    # persisted, rather than the command merely exiting 0.
+    - name: Log in to Mobilizon as the administrator the role created
+      ansible.builtin.uri:
+        url: "{{ mobilizon_molecule_api_url }}"
+        method: POST
+        body_format: json
+        body:
+          query: |
+            mutation Login($email: String!, $password: String!) {
+              login(email: $email, password: $password) {
+                accessToken
+                user { id email role }
+              }
+            }
+          variables:
+            email: "{{ mobilizon_molecule_admin_email }}"
+            password: "{{ mobilizon_molecule_admin_password }}"
+      register: mobilizon_login
+
+    - name: Assert the administrator the role created can authenticate
+      ansible.builtin.assert:
+        that:
+          - mobilizon_login.json.errors is not defined
+          - mobilizon_login.json.data.login.user.email == mobilizon_molecule_admin_email
+          - mobilizon_login.json.data.login.user.role == 'ADMINISTRATOR'
+          - mobilizon_login.json.data.login.accessToken | length > 0
+        fail_msg: "Could not authenticate as {{ mobilizon_molecule_admin_email }}: {{ mobilizon_login.json | to_json }}"
+        success_msg: "{{ mobilizon_molecule_admin_email }} authenticated as an administrator"
+
+    - name: Create a Mobilizon profile for the administrator
+      ansible.builtin.uri:
+        url: "{{ mobilizon_molecule_api_url }}"
+        method: POST
+        body_format: json
+        headers:
+          Authorization: "Bearer {{ mobilizon_login.json.data.login.accessToken }}"
+        body:
+          query: |
+            mutation CreatePerson($username: String!) {
+              createPerson(preferredUsername: $username, name: "Molecule Administrator") {
+                id
+                preferredUsername
+              }
+            }
+          variables:
+            username: "{{ mobilizon_molecule_profile_username }}"
+      register: mobilizon_person
+
+    - name: Assert the Mobilizon profile was created
+      ansible.builtin.assert:
+        that:
+          - mobilizon_person.json.errors is not defined
+          - mobilizon_person.json.data.createPerson.preferredUsername == mobilizon_molecule_profile_username
+        fail_msg: "Could not create a profile: {{ mobilizon_person.json | to_json }}"
+        success_msg: "Created the '{{ mobilizon_molecule_profile_username }}' profile"
+
+    - name: Create a Mobilizon group
+      ansible.builtin.uri:
+        url: "{{ mobilizon_molecule_api_url }}"
+        method: POST
+        body_format: json
+        headers:
+          Authorization: "Bearer {{ mobilizon_login.json.data.login.accessToken }}"
+        body:
+          query: |
+            mutation CreateGroup($username: String!, $name: String!) {
+              createGroup(preferredUsername: $username, name: $name, summary: "Created by Molecule") {
+                id
+                preferredUsername
+                name
+                type
+              }
+            }
+          variables:
+            username: "{{ mobilizon_molecule_group_username }}"
+            name: "{{ mobilizon_molecule_group_name }}"
+      register: mobilizon_group
+
+    - name: Assert the Mobilizon group was created
+      ansible.builtin.assert:
+        that:
+          - mobilizon_group.json.errors is not defined
+          - mobilizon_group.json.data.createGroup.preferredUsername == mobilizon_molecule_group_username
+          - mobilizon_group.json.data.createGroup.type == 'GROUP'
+        fail_msg: "Could not create a group: {{ mobilizon_group.json | to_json }}"
+        success_msg: "Created the '{{ mobilizon_molecule_group_username }}' group"
+
+    # Mobilizon stores an event's physical address as a PostGIS geometry, so a
+    # geo-tagged event is what makes the difference between "a database is
+    # attached" and "the PostGIS-enabled database this role requires is attached".
+    - name: Create a geo-tagged Mobilizon event
+      ansible.builtin.uri:
+        url: "{{ mobilizon_molecule_api_url }}"
+        method: POST
+        body_format: json
+        headers:
+          Authorization: "Bearer {{ mobilizon_login.json.data.login.accessToken }}"
+        body:
+          query: |
+            mutation CreateEvent(
+              $organizerActorId: ID!
+              $title: String!
+              $beginsOn: DateTime!
+              $address: AddressInput
+            ) {
+              createEvent(
+                organizerActorId: $organizerActorId
+                title: $title
+                description: "Created by Molecule"
+                beginsOn: $beginsOn
+                visibility: PUBLIC
+                physicalAddress: $address
+              ) {
+                id
+                uuid
+                title
+                physicalAddress { description locality geom }
+              }
+            }
+          variables:
+            organizerActorId: "{{ mobilizon_person.json.data.createPerson.id }}"
+            title: "{{ mobilizon_molecule_event_title }}"
+            beginsOn: "2030-01-01T12:00:00Z"
+            address:
+              description: "{{ mobilizon_molecule_address_description }}"
+              locality: "{{ mobilizon_molecule_address_locality }}"
+              country: Molecule Land
+              type: house
+              geom: "{{ mobilizon_molecule_geom }}"
+      register: mobilizon_event
+
+    - name: Assert the geo-tagged Mobilizon event was created
+      ansible.builtin.assert:
+        that:
+          - mobilizon_event.json.errors is not defined
+          - mobilizon_event.json.data.createEvent.title == mobilizon_molecule_event_title
+          - mobilizon_event.json.data.createEvent.physicalAddress.description == mobilizon_molecule_address_description
+          - mobilizon_event.json.data.createEvent.physicalAddress.geom == mobilizon_molecule_geom
+        fail_msg: "Could not create a geo-tagged event: {{ mobilizon_event.json | to_json }}"
+        success_msg: "Created the '{{ mobilizon_molecule_event_title }}' event at {{ mobilizon_molecule_geom }}"
+
+    # Reading back without the access token: the data survived the write and is
+    # served to the public, rather than having been echoed back from the request.
+    - name: Read the Mobilizon group and event back anonymously
+      ansible.builtin.uri:
+        url: "{{ mobilizon_molecule_api_url }}"
+        method: POST
+        body_format: json
+        body:
+          query: |
+            query ReadBack($username: String!, $uuid: UUID!) {
+              group(preferredUsername: $username) { preferredUsername name }
+              event(uuid: $uuid) {
+                title
+                physicalAddress { description locality geom }
+                organizerActor { preferredUsername }
+              }
+            }
+          variables:
+            username: "{{ mobilizon_molecule_group_username }}"
+            uuid: "{{ mobilizon_event.json.data.createEvent.uuid }}"
+      register: mobilizon_readback
+
+    - name: Assert the Mobilizon group and event are served back
+      ansible.builtin.assert:
+        that:
+          - mobilizon_readback.json.errors is not defined
+          - mobilizon_readback.json.data.group.name == mobilizon_molecule_group_name
+          - mobilizon_readback.json.data.event.title == mobilizon_molecule_event_title
+          - mobilizon_readback.json.data.event.physicalAddress.geom == mobilizon_molecule_geom
+          - mobilizon_readback.json.data.event.organizerActor.preferredUsername == mobilizon_molecule_profile_username
+        fail_msg: "Mobilizon did not serve the created records back: {{ mobilizon_readback.json | to_json }}"
+        success_msg: "Mobilizon serves the created group and geo-tagged event back to anonymous callers"
+
+    # Everything above could in principle be satisfied by an application talking
+    # to something other than the database this role wired up. These queries run
+    # inside the PostGIS container itself.
+    #
+    # `ST_X`, `ST_Y`, `GeometryType` and `PostGIS_Lib_Version` are PostGIS
+    # functions: the query cannot even parse without the extension installed, and
+    # it cannot return a row unless Mobilizon's write landed in this database.
+    - name: Read the Mobilizon event back out of PostGIS
+      ansible.builtin.command:
+        cmd: >-
+          {{ devture_systemd_docker_base_host_command_docker }} exec
+          --env PGPASSWORD={{ mobilizon_database_password }}
+          {{ postgis_identifier }}
+          psql --host=127.0.0.1 --username={{ mobilizon_database_username }} --dbname={{ mobilizon_database_name }}
+          --no-align --tuples-only
+          --command={{ postgis_query | quote }}
+      vars:
+        postgis_query: >-
+          SELECT e.title, a.description, a.locality,
+          round(ST_X(a.geom)::numeric, 4), round(ST_Y(a.geom)::numeric, 4),
+          GeometryType(a.geom), PostGIS_Lib_Version() IS NOT NULL
+          FROM events e JOIN addresses a ON a.id = e.physical_address_id
+          WHERE e.title = '{{ mobilizon_molecule_event_title }}'
+      register: mobilizon_postgis_event
+      changed_when: false
+
+    - name: Assert the Mobilizon event is stored in PostGIS as a geometry
+      ansible.builtin.assert:
+        that:
+          - mobilizon_postgis_event.stdout_lines | length == 1
+          - mobilizon_postgis_event.stdout | trim == expected_row
+        fail_msg: >-
+          PostGIS returned '{{ mobilizon_postgis_event.stdout | trim }}',
+          expected '{{ expected_row }}'
+        success_msg: "The event is stored in PostGIS as {{ expected_row }}"
+      vars:
+        expected_row: >-
+          {{
+            [
+              mobilizon_molecule_event_title,
+              mobilizon_molecule_address_description,
+              mobilizon_molecule_address_locality,
+              mobilizon_molecule_address_longitude,
+              mobilizon_molecule_address_latitude,
+              'POINT',
+              't',
+            ] | join('|')
+          }}
+
+    # The account the role created has to live in this same database, too.
+    - name: Read the Mobilizon administrator and group back out of PostGIS
+      ansible.builtin.command:
+        cmd: >-
+          {{ devture_systemd_docker_base_host_command_docker }} exec
+          --env PGPASSWORD={{ mobilizon_database_password }}
+          {{ postgis_identifier }}
+          psql --host=127.0.0.1 --username={{ mobilizon_database_username }} --dbname={{ mobilizon_database_name }}
+          --no-align --tuples-only
+          --command={{ postgis_query | quote }}
+      vars:
+        postgis_query: >-
+          SELECT (SELECT role::text FROM users WHERE email = '{{ mobilizon_molecule_admin_email }}')
+          || '/' ||
+          (SELECT type::text FROM actors WHERE preferred_username = '{{ mobilizon_molecule_group_username }}')
+      register: mobilizon_postgis_records
+      changed_when: false
+
+    - name: Assert the Mobilizon administrator and group are stored in PostGIS
+      ansible.builtin.assert:
+        that: mobilizon_postgis_records.stdout | trim == 'administrator/Group'
+        fail_msg: >-
+          PostGIS returned '{{ mobilizon_postgis_records.stdout | trim }}' for the
+          administrator account and the group, expected 'administrator/Group'
+        success_msg: "The administrator account and the group are stored in PostGIS"
+
+    - name: Show Mobilizon verification summary
       ansible.builtin.debug:
         msg:
           - "Mobilizon systemd: {{ mobilizon_service.status.ActiveState }}"
-          - "Mobilizon HTTP: {{ mobilizon_endpoint.status }}"
+          - "Mobilizon version: {{ mobilizon_nodeinfo.json.software.version }} (defaults/main.yml: {{ mobilizon_role_defaults.mobilizon_version }})"
+          - "Mobilizon port: {{ mobilizon_container_http_port }}"
+          - "Mobilizon instance name: {{ mobilizon_nodeinfo.json.metadata.nodeName }}"
+          - "PostGIS event row: {{ mobilizon_postgis_event.stdout | trim }}"
+          - "PostGIS account/group row: {{ mobilizon_postgis_records.stdout | trim }}"

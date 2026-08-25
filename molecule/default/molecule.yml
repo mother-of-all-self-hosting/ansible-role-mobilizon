@@ -37,9 +37,34 @@ provisioner:
         mobilizon_scheme: http
         mobilizon_hostname: localhost
         mobilizon_container_labels_traefik_enabled: false
-        mobilizon_container_http_host_bind_port: 4000
+
+        # Deliberately not the 4000 that the container image listens on by default.
+        # Mobilizon binds whatever `MOBILIZON_INSTANCE_PORT` says, so an HTTP
+        # response on this port is proof that `mobilizon_container_http_port`
+        # reached the process - had the variable been merely decorative, the
+        # published port would map onto a port nothing listens on.
+        mobilizon_container_http_port: 4137
+        mobilizon_container_http_host_bind_port: 4137
+
         mobilizon_environment_variables_secret_key_base: secret
         mobilizon_environment_variables_secret_key: secret
+
+        # A value the container image would never produce on its own: unset,
+        # `MOBILIZON_INSTANCE_NAME` defaults to "Mobilizon". Asserting on it
+        # distinguishes a role-rendered `env` file from the image's own defaults.
+        mobilizon_environment_variables_instance_name: MASH Molecule Mobilizon
+
+        # This is the role's default. It is pinned here (and asserted in verify.yml)
+        # so that flipping the default to open registration cannot pass unnoticed.
+        mobilizon_environment_variables_registrations_open: false
+
+        # Exercises the role's own user-creation path (tasks/create_users_auto.yml
+        # -> tasks/util/ensure_user_registered.yml -> `mobilizon_ctl users.new`)
+        # from molecule/default/side_effect.yml.
+        mobilizon_users_custom:
+          - initial_email: "{{ mobilizon_molecule_admin_email }}"
+            initial_password: "{{ mobilizon_molecule_admin_password }}"
+            initial_role: admin
 
         # Variables required for Mobilizon to connect to the PostGIS database
         mobilizon_database_hostname: "{{ postgis_connection_hostname }}"
@@ -55,6 +80,9 @@ provisioner:
         # Variables for Postgres
         postgis_uid: 1000
         postgis_gid: 1000
+        # This is the role's own default. It is pinned here because verify.yml
+        # runs `psql` inside this container and never includes the PostGIS role.
+        postgis_identifier: postgis
         postgis_connection_password: postgis_password
         postgis_container_network: "{{ mobilizon_container_network }}"
         postgis_managed_databases: |
@@ -66,6 +94,19 @@ provisioner:
             }]
           }}
         postgis_allowed_versions_custom: [17] # Mobilizon seems to be incompatible with Postgres v18
+
+        # Fixtures shared by side_effect.yml and verify.yml.
+        mobilizon_molecule_admin_email: molecule-admin@example.com
+        mobilizon_molecule_admin_password: molecule-admin-password
+        mobilizon_molecule_profile_username: moleculeadmin
+        mobilizon_molecule_group_username: molecule_group
+        mobilizon_molecule_group_name: Molecule Test Group
+        mobilizon_molecule_event_title: Molecule Test Event
+        mobilizon_molecule_address_description: Molecule Venue
+        mobilizon_molecule_address_locality: Molecule City
+        # Mobilizon serialises a point as "<longitude>;<latitude>".
+        mobilizon_molecule_address_longitude: "23.3219"
+        mobilizon_molecule_address_latitude: "42.6977"
   env:
     # Workaround for https://github.com/ansible/molecule/issues/4391
     ANSIBLE_ROLES_PATH: ${MOLECULE_PROJECT_DIRECTORY}/..:/.ansible/roles:/usr/share/ansible/roles:/etc/ansible/roles:~/.ansible/roles
