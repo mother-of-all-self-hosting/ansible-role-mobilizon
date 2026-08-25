@@ -2,5 +2,12 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "github>mother-of-all-self-hosting/renovate-config#v1.0.0"
+  ],
+  "packageRules": [
+    {
+      "description": "Mobilizon's own version stays hand-reviewed: the container entrypoint runs `mobilizon_ctl migrate` on every start, and patch releases do carry new Ecto migrations (5.1.3 -> 5.1.4 and 5.2.0 -> 5.2.2 both added some), so an automerged patch would migrate a production database unattended.",
+      "matchManagers": ["custom.regex"],
+      "automerge": false
+    }
   ]
 }
