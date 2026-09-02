@@ -41,15 +41,9 @@ Refer to [this page](./molecule/README.md) for details about how to utilize it.
 
 ### Releases
 
-Releases are tagged automatically by [`.github/workflows/autotag.yml`](.github/workflows/autotag.yml), which runs [`bin/compute-next-tag.sh`](bin/compute-next-tag.sh) on every push to the main branch.
+Tags are created by [`.github/workflows/autotag.yml`](.github/workflows/autotag.yml), which asks [`bin/compute-next-tag.sh`](bin/compute-next-tag.sh) what the commit on `main` should be released as. The answer comes from the Mobilizon version pinned in [`defaults/main.yml`](defaults/main.yml) and from the tags that already exist, so a commit that only touches documentation or CI is not released at all, and any change to the role itself is — without waiting for a dependency bump to carry it along.
 
-The tag is derived from the repository's state — the `mobilizon_version` value in [`defaults/main.yml`](defaults/main.yml) and the tags that already exist — rather than from commit messages:
+[`bin/test-compute-next-tag.sh`](bin/test-compute-next-tag.sh) exercises that script against throwaway repositories, and runs as a prek hook.
 
-- when `mobilizon_version` names a version that has never been released, the release counter restarts at `0` (e.g. `v5.2.5-0`)
-- otherwise the counter is incremented (e.g. `v5.2.5-1`), but only when something under `defaults/`, `meta/`, `tasks/` or `templates/` has changed since the previous release — a documentation or CI-only commit does not create churn in the playbooks which consume this role
-
-Because the result depends only on the state of the branch, it does not matter in which order pull requests get merged, and any change to the role releases itself without a human tagging.
-
-[`bin/test-compute-next-tag.sh`](bin/test-compute-next-tag.sh) exercises the computation against throwaway repositories. It runs as a pre-commit hook whenever the tagger or `defaults/main.yml` changes.
-
-Mobilizon's own version is deliberately **not** automerged by Renovate: the container image's entrypoint runs `mobilizon_ctl migrate` on every start, and Mobilizon's patch releases do add Ecto migrations, so a version bump wants a human to look at it before it reaches a production database. See [`.github/renovate.json`](.github/renovate.json).
+>[!NOTE]
+> Mobilizon's own version is deliberately not automerged by Renovate. See [`.github/renovate.json`](.github/renovate.json) for details.
