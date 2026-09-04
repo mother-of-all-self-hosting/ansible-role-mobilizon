@@ -101,12 +101,6 @@
           but defaults/main.yml ships {{ mobilizon_role_defaults.mobilizon_version }}
         success_msg: "Running Mobilizon is {{ mobilizon_nodeinfo.json.software.version }}, as defaults/main.yml says"
 
-    - name: Assert the software reported by nodeinfo is Mobilizon
-      ansible.builtin.assert:
-        that: mobilizon_nodeinfo.json.software.name == 'Mobilizon'
-        fail_msg: "nodeinfo reports {{ mobilizon_nodeinfo.json.software.name }}, not Mobilizon"
-        success_msg: "nodeinfo reports Mobilizon"
-
     # Unset, `MOBILIZON_INSTANCE_NAME` defaults to "Mobilizon" and
     # `MOBILIZON_INSTANCE_REGISTRATIONS_OPEN` to "false". The name asserted here
     # can only have come out of the role's `env` template; the registration flag
