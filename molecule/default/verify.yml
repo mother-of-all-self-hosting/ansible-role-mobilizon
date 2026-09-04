@@ -387,7 +387,7 @@
           administrator account and the group, expected 'administrator/Group'
         success_msg: "The administrator account and the group are stored in PostGIS"
 
-    - name: Show Mobilizon verification summary
+    - name: Show the Mobilizon verification summary
       ansible.builtin.debug:
         msg:
           - "Mobilizon systemd: {{ mobilizon_service.status.ActiveState }}"
