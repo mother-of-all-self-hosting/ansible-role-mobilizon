@@ -88,17 +88,13 @@
           `mobilizon_container_http_port` did not reach the process
         success_msg: "Mobilizon is served on the role-configured port {{ mobilizon_container_http_port }}"
 
-    # This is what an automated version bump would have to be gated on: the
-    # software actually running is the version defaults/main.yml names. The
-    # image's `org.opencontainers.image.version` OCI label is empty, so nodeinfo
+    # The image's `org.opencontainers.image.version` OCI label is empty, so nodeinfo
     # is the honest surface here.
-    - name: Assert the running Mobilizon is the version the role ships
+    - name: Assert the running Mobilizon is the version this role installs
       ansible.builtin.assert:
-        that: mobilizon_nodeinfo.json.software.version == mobilizon_role_defaults.mobilizon_version
-        fail_msg: >-
-          Running Mobilizon is {{ mobilizon_nodeinfo.json.software.version }},
-          but defaults/main.yml ships {{ mobilizon_role_defaults.mobilizon_version }}
-        success_msg: "Running Mobilizon is {{ mobilizon_nodeinfo.json.software.version }}, as defaults/main.yml says"
+        that: mobilizon_nodeinfo.json.software.version == mobilizon_defaults.mobilizon_version
+        fail_msg: "Mobilizon reports {{ mobilizon_nodeinfo.json.software.version | default('none') }}, expected {{ mobilizon_defaults.mobilizon_version }}"
+        success_msg: "Mobilizon reports {{ mobilizon_nodeinfo.json.software.version }}"
 
     # Unset, `MOBILIZON_INSTANCE_NAME` defaults to "Mobilizon" and
     # `MOBILIZON_INSTANCE_REGISTRATIONS_OPEN` to "false". The name asserted here
