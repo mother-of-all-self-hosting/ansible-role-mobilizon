@@ -26,14 +26,13 @@
         name: com.devture.ansible.role.systemd_docker_base
         public: true
 
-    # `mobilizon_version` is the leaf literal that Renovate bumps and that
-    # bin/compute-next-tag.sh derives the release tag from. Reading it here (and
-    # not from the scenario's own group_vars) is what makes the version
-    # assertion below a statement about what the role ships.
-    - name: Read Mobilizon role defaults
+    # The role is not included in this playbook, so its defaults are not in
+    # scope. Reading defaults/main.yml directly ties the version assertion
+    # below.
+    - name: Load the role defaults
       ansible.builtin.include_vars:
         file: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}/defaults/main.yml"
-        name: mobilizon_role_defaults
+        name: mobilizon_defaults
 
     # An unconfigured Mobilizon container never gets this far: its entrypoint
     # loops on `pg_isready` until a database answers, then runs the Ecto
@@ -130,7 +129,7 @@
       ansible.builtin.assert:
         that:
           - mobilizon_graphql_config.json.errors is not defined
-          - mobilizon_graphql_config.json.data.config.version == mobilizon_role_defaults.mobilizon_version
+          - mobilizon_graphql_config.json.data.config.version == mobilizon_defaults.mobilizon_version
           - mobilizon_graphql_config.json.data.config.name == mobilizon_environment_variables_instance_name
           - not mobilizon_graphql_config.json.data.config.registrationsOpen
         fail_msg: "Mobilizon's GraphQL API reported {{ mobilizon_graphql_config.json | to_json }}"
@@ -392,7 +391,7 @@
       ansible.builtin.debug:
         msg:
           - "Mobilizon systemd: {{ mobilizon_service.status.ActiveState }}"
-          - "Mobilizon version: {{ mobilizon_nodeinfo.json.software.version }} (defaults/main.yml: {{ mobilizon_role_defaults.mobilizon_version }})"
+          - "Mobilizon version: {{ mobilizon_nodeinfo.json.software.version }} (defaults/main.yml: {{ mobilizon_defaults.mobilizon_version }})"
           - "Mobilizon port: {{ mobilizon_container_http_port }}"
           - "Mobilizon instance name: {{ mobilizon_nodeinfo.json.metadata.nodeName }}"
           - "PostGIS event row: {{ mobilizon_postgis_event.stdout | trim }}"
