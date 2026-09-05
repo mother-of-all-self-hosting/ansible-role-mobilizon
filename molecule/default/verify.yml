@@ -387,7 +387,7 @@
       ansible.builtin.debug:
         msg:
           - "Mobilizon systemd: {{ mobilizon_service.status.ActiveState }}"
-          - "Mobilizon version: {{ mobilizon_nodeinfo.json.software.version }} (defaults/main.yml: {{ mobilizon_defaults.mobilizon_version }})"
+          - "Mobilizon version: {{ mobilizon_nodeinfo.json.software.version }}"
           - "Mobilizon port: {{ mobilizon_container_http_port }}"
           - "Mobilizon instance name: {{ mobilizon_nodeinfo.json.metadata.nodeName }}"
           - "PostGIS event row: {{ mobilizon_postgis_event.stdout | trim }}"
