@@ -34,13 +34,8 @@
         file: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}/defaults/main.yml"
         name: mobilizon_defaults
 
-    # An unconfigured Mobilizon container never gets this far: its entrypoint
-    # loops on `pg_isready` until a database answers, then runs the Ecto
-    # migrations, and only then starts serving. `Restart=always` nevertheless
-    # keeps the unit "active" throughout, so this is a smoke gate and nothing
-    # more - every claim about the deployment is made by the assertions below.
-    - name: Wait for Mobilizon service to become active (up to 180s)
-      ansible.builtin.systemd:
+    - name: Wait for the Mobilizon systemd service to become active (up to 180s)
+      ansible.builtin.systemd_service:
         name: mobilizon.service
       register: mobilizon_service
       until: mobilizon_service.status.ActiveState == 'active'
@@ -50,13 +45,16 @@
       # wall of systemd unit properties.
       failed_when: false
 
-    - name: Assert Mobilizon service is active
+    # `Restart=always` in the systemd unit means that even a container which crashes
+    # and gets restarted reads as active here, so this is a precondition rather than
+    # a result.
+    - name: Assert the Mobilizon systemd service is active
       ansible.builtin.assert:
         that: mobilizon_service.status.ActiveState == 'active'
-        fail_msg: "mobilizon.service not active ({{ mobilizon_service.status.ActiveState }})"
+        fail_msg: "mobilizon.service is not active ({{ mobilizon_service.status.ActiveState }})"
         success_msg: "mobilizon.service is active"
 
-    - name: Retrieve Mobilizon service log for debugging
+    - name: Retrieve the Mobilizon systemd service log for debugging
       when: mobilizon_debug_service_enabled | bool
       ansible.builtin.command:
         cmd: journalctl -xeu mobilizon.service
