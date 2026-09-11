@@ -15,6 +15,10 @@
     mobilizon_molecule_api_url: "http://localhost:{{ mobilizon_container_http_host_bind_port }}/api"
     mobilizon_molecule_geom: "{{ mobilizon_molecule_address_longitude }};{{ mobilizon_molecule_address_latitude }}"
 
+    mobilizon_verify_units:
+      - mobilizon.service
+      - postgis.service
+
   tasks:
     - name: Verify that Mobilizon works
       block:
@@ -36,13 +40,14 @@
             file: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}/defaults/main.yml"
             name: mobilizon_defaults
 
-        - name: Wait for the Mobilizon systemd service to become active (up to 180s)
+        - name: Wait for the Mobilizon systemd services to become active (up to 180s each)
           ansible.builtin.systemd_service:
-            name: mobilizon.service
-          register: mobilizon_service
-          until: mobilizon_service.status.ActiveState == 'active'
+            name: "{{ item }}"
+          register: mobilizon_services
+          until: mobilizon_services.status.ActiveState == 'active'
           retries: 36
           delay: 5
+          loop: "{{ mobilizon_verify_units }}"
           # So that giving up is reported by the assertion below rather than as a
           # wall of systemd unit properties.
           failed_when: false
@@ -50,17 +55,20 @@
         # `Restart=always` in the systemd unit means that even a container which crashes
         # and gets restarted reads as active here, so this is a precondition rather than
         # a result.
-        - name: Assert the Mobilizon systemd service is active
+        - name: Assert the Mobilizon systemd services are active
           ansible.builtin.assert:
-            that: mobilizon_service.status.ActiveState == 'active'
-            fail_msg: "mobilizon.service is not active ({{ mobilizon_service.status.ActiveState }})"
-            success_msg: "mobilizon.service is active"
+            that: mobilizon_services.results | map(attribute='status.ActiveState') | unique | list == ['active']
+            fail_msg: >-
+              Not every service is active:
+              {{ dict(mobilizon_verify_units | zip(mobilizon_services.results | map(attribute='status.ActiveState'))) }}
+            success_msg: "Every systemd service is active"
 
-        - name: Retrieve the Mobilizon systemd service log for debugging
+        - name: Retrieve the Mobilizon systemd services log for debugging
           when: mobilizon_debug_service_enabled | bool
           ansible.builtin.command:
-            cmd: journalctl --no-pager --output=cat --unit=mobilizon.service
+            cmd: "journalctl --no-pager --output=cat --unit={{ item }}"
           changed_when: false
+          loop: "{{ mobilizon_verify_units }}"
 
         # The scenario runs Mobilizon on a port the container image does not use by
         # default. Getting an answer here proves `mobilizon_container_http_port`
@@ -386,7 +394,7 @@
         - name: Show the Mobilizon verification summary
           ansible.builtin.debug:
             msg:
-              - "Mobilizon systemd: {{ mobilizon_service.status.ActiveState }}"
+              - "Mobilizon systemd: {% for unit, state in mobilizon_verify_units | zip(mobilizon_services.results | map(attribute='status.ActiveState')) %}{{ unit }} ({{ state }}){% if not loop.last %}, {% endif %}{% endfor %}"
               - "Mobilizon version: {{ mobilizon_nodeinfo.json.software.version }}"
               - "Mobilizon port: {{ mobilizon_container_http_port }}"
               - "Mobilizon instance name: {{ mobilizon_nodeinfo.json.metadata.nodeName }}"
