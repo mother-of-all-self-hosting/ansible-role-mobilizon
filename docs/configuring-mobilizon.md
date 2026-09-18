@@ -144,7 +144,7 @@ Take a look at:
 
 - [`defaults/main.yml`](../defaults/main.yml) for some variables that you can customize via your `vars.yml` file. You can override settings (even those that don't have dedicated playbook variables) using the `mobilizon_environment_variables_additional_variables` variable
 
-See [this page](https://framagit.org/kaihuri/mobilizon-docker/-/blob/master/env.template) on the official documentation for a complete list of Mobilizon's config options that you could put in `mobilizon_environment_variables_additional_variables`.
+See [this page](https://framagit.org/kaihuri/mobilizon-docker/-/blob/master/env.template) on the official documentation for a complete list of Mobilizon's config options that you can put in `mobilizon_environment_variables_additional_variables`.
 
 ## Installing
 
