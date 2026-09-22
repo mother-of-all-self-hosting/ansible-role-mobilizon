@@ -10,7 +10,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 This is an [Ansible](https://www.ansible.com/) role which installs [Mobilizon](https://joinmobilizon.org/en/) to run as a [Docker](https://www.docker.com/) container wrapped in a systemd service.
 
 >[!NOTE]
-> The project has been transferred from Framasoft to Kaihuri Association. See [this page](https://framablog.org/2023/12/05/mobilizon-v4-letape-de-la-maturite/) for details.
+> The project has been transferred from Framasoft to Kaihuri Association. Refer to [this page](https://framablog.org/2023/12/05/mobilizon-v4-letape-de-la-maturite/) for details.
 
 This role *implicitly* depends on:
 
@@ -46,4 +46,4 @@ Tags are created by [`.github/workflows/autotag.yml`](.github/workflows/autotag.
 [`bin/test-compute-next-tag.sh`](bin/test-compute-next-tag.sh) exercises that script against throwaway repositories, and runs as a prek hook.
 
 >[!NOTE]
-> Mobilizon's own version is deliberately not automerged by Renovate. See [`.github/renovate.json`](.github/renovate.json) for details.
+> Mobilizon's own version is deliberately not automerged by Renovate. Refer to [`.github/renovate.json`](.github/renovate.json) for details.
