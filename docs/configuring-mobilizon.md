@@ -111,19 +111,19 @@ You can configure a SMTP mailer to enable it for signing up, verifying or changi
 To configure it, add the following configuration to your `vars.yml` file as below (adapt to your needs):
 
 ```yaml
-# Set the hostname of the SMTP server
+# Specify the hostname of the SMTP server
 mobilizon_environment_variables_email_smtp_server: ""
 
-# Set the port number of the SMTP server
+# Specify the port number of the SMTP server
 mobilizon_environment_variables_email_smtp_port: 587
 
-# Set the username for the SMTP server
+# Specify the username for the SMTP server
 mobilizon_environment_variables_email_smtp_username: ""
 
-# Set the password for the SMTP server
+# Specify the password for the SMTP server
 mobilizon_environment_variables_email_smtp_password: ""
 
-# Set the email address that emails will be sent from
+# Specify the email address that emails will be sent from
 mobilizon_environment_variables_instance_email: ""
 
 # Set the email address that will receive emails
