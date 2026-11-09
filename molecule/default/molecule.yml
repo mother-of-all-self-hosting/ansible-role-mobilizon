@@ -77,8 +77,8 @@ provisioner:
         # Variables required for Mobilizon to connect to the PostGIS database
         mobilizon_database_hostname: "{{ postgis_connection_hostname }}"
         mobilizon_database_port: "{{ postgis_connection_port }}"
-        mobilizon_database_username: my_database_username
-        mobilizon_database_password: my_database_password
+        mobilizon_database_username: /#@my_database_username?%
+        mobilizon_database_password: /#@my_database_password?%
         mobilizon_database_name: mobilizon
         mobilizon_systemd_required_services_list_auto: |
           {{
