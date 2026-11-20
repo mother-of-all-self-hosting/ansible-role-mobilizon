@@ -23,9 +23,6 @@
   with_items:
     - mobilizon_uid
     - mobilizon_gid
-    - mobilizon_hostname
-    - mobilizon_path_prefix
-    - mobilizon_container_network
     - mobilizon_database_password
     - mobilizon_database_hostname
     - mobilizon_environment_variables_secret_key_base
